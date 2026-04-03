@@ -4,6 +4,10 @@ import "./globals.css";
 import SideBar from "@/components/SideBar";
 import Header from "@/components/Header";
 
+import "leaflet/dist/leaflet.css";
+import "leaflet.markercluster/dist/MarkerCluster.css";
+import "leaflet.markercluster/dist/MarkerCluster.Default.css";
+
 const inter = Inter({
   variable: "--font-geist-sans",
   subsets: ["latin"],
