@@ -10,10 +10,97 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  name      String?
-  password  String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id                 String   @id @default(uuid())
+  email              String   @unique
+  name               String?
+  password           String
+  hashedRefreshToken String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+}
+
+enum Priority {
+  GREEN
+  YELLOW
+  RED
+}
+
+enum DeliveryStatus {
+  PENDING
+  IN_PROGRESS
+  DELIVERED
+}
+
+enum VehicleStatus{
+  IDLE 
+  EN_ROUTE
+  OFFLINE
+}
+
+model Brigade {
+  id         String     @id @default(uuid())
+  name       String
+  priority   Priority   @default(GREEN)
+  needs      String?
+  lat        Float?     
+  lng        Float?      
+  deliveries Delivery[]
+  alerts     Alert[]
+}
+
+model Vehicle {
+  id         String   @id @default(uuid())
+  driverName String
+  lat        Float    
+  lng        Float
+  status     VehicleStatus @default(IDLE)
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+  routes     Route[]
+}
+
+model Resource {
+  id         String     @id @default(uuid())
+  name       String     
+  quantity   Int        
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
+  deliveries Delivery[] 
+}
+
+model Route {
+  id         String     @id @default(uuid())
+  vehicleId  String     
+  isActive   Boolean    @default(true)
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+  vehicle    Vehicle    @relation(fields: [vehicleId], references: [id])
+  deliveries Delivery[]
+}
+
+model Delivery {
+  id         String         @id @default(uuid())
+  brigadeId  String
+  status     DeliveryStatus @default(PENDING)
+  routeId    String?
+  resourceId String
+  quantity   Int
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+  stepOrder  Int?           
+  priority   Priority   @default(GREEN) 
+
+  brigade    Brigade  @relation(fields: [brigadeId], references: [id],onDelete: Cascade)
+  route      Route?   @relation(fields: [routeId], references: [id],onDelete: SetNull)
+  resource   Resource @relation(fields: [resourceId], references: [id],onDelete: Restrict) 
+}
+
+model Alert {
+  id         String   @id @default(uuid())
+  brigadeId  String
+  message    String
+  isResolved Boolean  @default(false) 
+  createdAt  DateTime @default(now())
+  
+  brigade    Brigade  @relation(fields: [brigadeId], references: [id])
 }
