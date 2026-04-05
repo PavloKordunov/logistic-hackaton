@@ -13,69 +13,6 @@ import {
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 
-// const brigades = [
-//   {
-//     id: "1",
-//     name: "3-тя Окрема Штурмова",
-//     number: "3 ОШБр",
-//     priority: "RED",
-//     location: "Бахмутський напрямок",
-//     demand: 24,
-//     needs: ["Турнікети: 120", "БК 155мм: 40", "Рації: 15"],
-//     coordinates: "48.59, 37.99",
-//   },
-//   {
-//     id: "2",
-//     name: "47-ма Окрема Механізована",
-//     number: "47 ОМБр",
-//     priority: "RED",
-//     location: "Авдіївський напрямок",
-//     demand: 18,
-//     needs: ["Запчастини: 12", "Пальне: 800л", "Медикаменти: 5я"],
-//     coordinates: "48.13, 37.74",
-//   },
-//   {
-//     id: "3",
-//     name: "93-тя Холодний Яр",
-//     number: "93 ОМБр",
-//     priority: "YELLOW",
-//     location: "Лиманський напрямок",
-//     demand: 12,
-//     needs: ["БК 122мм: 20", "Мастило: 50л"],
-//     coordinates: "49.01, 37.61",
-//   },
-//   {
-//     id: "4",
-//     name: "80-та Окрема ДШВ",
-//     number: "80 ОДШБр",
-//     priority: "GREEN",
-//     location: "Куп’янський напрямок",
-//     demand: 8,
-//     needs: ["Продукти: 200кг", "Вода: 500л"],
-//     coordinates: "49.71, 37.61",
-//   },
-//   {
-//     id: "5",
-//     name: "1-ша Окрема Танкова",
-//     number: "1 ОТБр",
-//     priority: "YELLOW",
-//     location: "Запорізький напрямок",
-//     demand: 15,
-//     needs: ["Пальне: 1200л", "Акумулятори: 8"],
-//     coordinates: "47.83, 35.18",
-//   },
-//   {
-//     id: "6",
-//     name: "24-та Короля Данила",
-//     number: "24 ОМБр",
-//     priority: "GREEN",
-//     location: "Торецький напрямок",
-//     demand: 5,
-//     needs: ["Форма: 50к", "Взуття: 30п"],
-//     coordinates: "48.39, 37.84",
-//   },
-// ];
-
 const BrigadesPage = () => {
   const [unitFilter, setUnitFilter] = useState<
     "all" | "GREEN" | "YELLOW" | "RED" | "frontline"

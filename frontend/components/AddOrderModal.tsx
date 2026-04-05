@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   X,
@@ -10,16 +10,14 @@ import {
   ShieldAlert,
   Package,
   MapPin,
+  Loader2,
 } from "lucide-react";
 
-const BRIGADES_LIST = [
-  "3-тя Окрема Штурмова",
-  "47-ма Окрема Механізована",
-  "93-тя Холодний Яр",
-  "80-та Окрема ДШВ",
-  "1-ша Окрема Танкова",
-  "24-та Короля Данила",
-];
+type Brigade = {
+  id: string;
+  name: string;
+  location?: { lat: number; lng: number };
+};
 
 type Resource = {
   id: string;
@@ -29,7 +27,7 @@ type Resource = {
 
 type Destination = {
   id: string;
-  brigade: string;
+  brigadeId: string;
   priority: "GREEN" | "YELLOW" | "RED";
   resources: Resource[];
 };
@@ -40,6 +38,14 @@ interface CreateRouteModalProps {
   onSubmit: (routeData: Destination[]) => void;
 }
 
+const MOCK_RESOURCES = [
+  "Аптечки (IFAK)",
+  "Зимова форма",
+  "Термінали Starlink",
+  "Сухпайки (MRE)",
+  "FPV-дрони",
+];
+
 const CreateRouteModal: React.FC<CreateRouteModalProps> = ({
   isOpen,
   onClose,
@@ -48,11 +54,50 @@ const CreateRouteModal: React.FC<CreateRouteModalProps> = ({
   const [destinations, setDestinations] = useState<Destination[]>([
     {
       id: crypto.randomUUID(),
-      brigade: "",
+      brigadeId: "",
       priority: "GREEN",
       resources: [{ id: crypto.randomUUID(), name: "", quantity: "" }],
     },
   ]);
+
+  const [brigadesList, setBrigadesList] = useState<Brigade[]>([]);
+  const [isLoadingBrigades, setIsLoadingBrigades] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
+
+  useEffect(() => {
+    if (isOpen) {
+      const fetchBrigades = async () => {
+        setIsLoadingBrigades(true);
+        try {
+          const token = localStorage.getItem("token");
+          const response = await fetch(`${baseUrl}/brigades`, {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          });
+
+          if (!response.ok) {
+            throw new Error("Не вдалося завантажити список бригад");
+          }
+
+          const data = await response.json();
+          setBrigadesList(data);
+        } catch (err: any) {
+          console.error("Помилка завантаження бригад:", err);
+          setError("Помилка завантаження списку бригад. Спробуйте пізніше.");
+        } finally {
+          setIsLoadingBrigades(false);
+        }
+      };
+
+      fetchBrigades();
+    }
+  }, [isOpen, baseUrl]);
 
   if (!isOpen) return null;
 
@@ -61,7 +106,7 @@ const CreateRouteModal: React.FC<CreateRouteModalProps> = ({
       ...destinations,
       {
         id: crypto.randomUUID(),
-        brigade: "",
+        brigadeId: "",
         priority: "GREEN",
         resources: [{ id: crypto.randomUUID(), name: "", quantity: "" }],
       },
@@ -134,9 +179,79 @@ const CreateRouteModal: React.FC<CreateRouteModalProps> = ({
     );
   };
 
-  const handleSave = () => {
-    onSubmit(destinations);
-    onClose();
+  const handleSave = async () => {
+    setIsSubmitting(true);
+    setError(null);
+
+    try {
+      const plans = new Map<
+        string,
+        { brigadeId: string; quantity: number }[]
+      >();
+
+      for (const dest of destinations) {
+        if (!dest.brigadeId) continue;
+
+        for (const res of dest.resources) {
+          const trimmedName = res.name.trim();
+          const quantityNum = parseInt(res.quantity, 10);
+
+          if (!trimmedName || isNaN(quantityNum)) continue;
+
+          const currentTargets = plans.get(trimmedName) || [];
+          currentTargets.push({
+            brigadeId: dest.brigadeId,
+            quantity: quantityNum,
+          });
+
+          plans.set(trimmedName, currentTargets);
+        }
+      }
+
+      if (plans.size === 0) {
+        throw new Error(
+          "Заповніть хоча б один ресурс з коректною кількістю та виберіть бригаду.",
+        );
+      }
+
+      const token = localStorage.getItem("token");
+
+      const requests = Array.from(plans.entries()).map(
+        ([resourceName, targets]) => {
+          return fetch(`${baseUrl}/routes/auto-plan`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            },
+            body: JSON.stringify({
+              resourceName,
+              targets,
+            }),
+          });
+        },
+      );
+
+      const responses = await Promise.all(requests);
+
+      for (const response of responses) {
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(
+            errorData.message ||
+              "Сталася помилка при формуванні рейсу на сервері.",
+          );
+        }
+      }
+
+      onSubmit(destinations);
+      onClose();
+    } catch (err: any) {
+      setError(err.message || "Помилка сервера");
+      console.error(err);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -170,6 +285,12 @@ const CreateRouteModal: React.FC<CreateRouteModalProps> = ({
         </div>
 
         <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 sm:space-y-8 custom-scrollbar">
+          {error && (
+            <div className="p-4 mb-4 text-sm text-red-500 bg-red-500/10 border border-red-500/50 notched-corner">
+              {error}
+            </div>
+          )}
+
           <AnimatePresence>
             {destinations.map((dest, index) => (
               <motion.div
@@ -204,25 +325,27 @@ const CreateRouteModal: React.FC<CreateRouteModalProps> = ({
                   )}
                 </div>
 
-                {/* Вибір бригади та пріоритету */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
                   <div className="space-y-2">
                     <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] flex items-center gap-2">
                       <MapPin size={12} /> Підрозділ / Бригада
                     </label>
                     <select
-                      value={dest.brigade}
+                      value={dest.brigadeId}
                       onChange={(e) =>
-                        updateDestination(dest.id, "brigade", e.target.value)
+                        updateDestination(dest.id, "brigadeId", e.target.value)
                       }
-                      className="w-full bg-military-gray/50 border border-white/10 text-white p-3 outline-none focus:border-military-orange notched-corner text-sm font-bold uppercase appearance-none"
+                      disabled={isLoadingBrigades}
+                      className="w-full bg-military-gray/50 border border-white/10 text-white p-3 outline-none focus:border-military-orange notched-corner text-sm font-bold uppercase appearance-none disabled:opacity-50"
                     >
                       <option value="" disabled>
-                        Оберіть бригаду...
+                        {isLoadingBrigades
+                          ? "Завантаження бригад..."
+                          : "Оберіть бригаду..."}
                       </option>
-                      {BRIGADES_LIST.map((b) => (
-                        <option key={b} value={b}>
-                          {b}
+                      {brigadesList.map((b) => (
+                        <option key={b.id} value={b.id}>
+                          {b.name}
                         </option>
                       ))}
                     </select>
@@ -232,7 +355,7 @@ const CreateRouteModal: React.FC<CreateRouteModalProps> = ({
                     <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] flex items-center gap-2">
                       <ShieldAlert size={12} /> Пріоритет
                     </label>
-                      <div className="grid grid-cols-3 gap-2">
+                    <div className="grid grid-cols-3 gap-2">
                       {(["GREEN", "YELLOW", "RED"] as const).map((p) => (
                         <button
                           key={p}
@@ -266,10 +389,11 @@ const CreateRouteModal: React.FC<CreateRouteModalProps> = ({
 
                   <div className="space-y-3">
                     {dest.resources.map((res, rIndex) => (
-                      <div key={res.id} className="grid grid-cols-1 sm:grid-cols-[1fr_180px_auto] gap-3 items-start">
-                        <input
-                          type="text"
-                          placeholder="Назва (напр. Турнікети СІЧ)"
+                      <div
+                        key={res.id}
+                        className="grid grid-cols-1 sm:grid-cols-[1fr_180px_auto] gap-3 items-start"
+                      >
+                        <select
                           value={res.name}
                           onChange={(e) =>
                             updateResource(
@@ -279,12 +403,22 @@ const CreateRouteModal: React.FC<CreateRouteModalProps> = ({
                               e.target.value,
                             )
                           }
-                          className="flex-1 bg-military-gray/80 border border-white/10 text-white p-2.5 outline-none focus:border-military-orange notched-corner text-xs font-bold"
-                        />
+                          className="flex-1 bg-military-gray/80 border border-white/10 text-white p-2.5 outline-none focus:border-military-orange notched-corner text-xs font-bold appearance-none"
+                        >
+                          <option value="" disabled>
+                            Оберіть ресурс...
+                          </option>
+                          {MOCK_RESOURCES.map((resource) => (
+                            <option key={resource} value={resource}>
+                              {resource}
+                            </option>
+                          ))}
+                        </select>
                         <input
-                          type="text"
-                          placeholder="Кількість (напр. 120 шт)"
+                          type="string"
+                          placeholder="Кількість (напр. 120)"
                           value={res.quantity}
+                          min="1"
                           onChange={(e) =>
                             updateResource(
                               dest.id,
@@ -333,15 +467,22 @@ const CreateRouteModal: React.FC<CreateRouteModalProps> = ({
         <div className="p-4 sm:p-6 border-t border-white/10 bg-military-gray/30 flex flex-col-reverse sm:flex-row justify-end gap-3 sm:gap-4 mt-auto">
           <button
             onClick={onClose}
-            className="px-6 sm:px-8 py-3 bg-transparent text-slate-400 hover:text-white text-[10px] font-black uppercase tracking-widest transition-colors"
+            disabled={isSubmitting}
+            className="px-6 sm:px-8 py-3 bg-transparent text-slate-400 hover:text-white text-[10px] font-black uppercase tracking-widest transition-colors disabled:opacity-50"
           >
             Відмінити
           </button>
           <button
             onClick={handleSave}
-            className="px-6 sm:px-8 py-3 bg-military-orange hover:bg-[#ffb033] text-black text-xs font-black uppercase tracking-[0.2em] notched-button shadow-[0_0_20px_rgba(255,157,0,0.2)] transition-all flex items-center justify-center gap-2"
+            disabled={isSubmitting || isLoadingBrigades}
+            className="px-6 sm:px-8 py-3 bg-military-orange hover:bg-[#ffb033] text-black text-xs font-black uppercase tracking-[0.2em] notched-button shadow-[0_0_20px_rgba(255,157,0,0.2)] transition-all flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
           >
-            <Route size={16} /> Сформувати рейс
+            {isSubmitting ? (
+              <Loader2 size={16} className="animate-spin" />
+            ) : (
+              <Route size={16} />
+            )}
+            {isSubmitting ? "Формування..." : "Сформувати рейс"}
           </button>
         </div>
       </motion.div>
