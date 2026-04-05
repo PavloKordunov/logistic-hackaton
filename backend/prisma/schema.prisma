@@ -23,9 +23,9 @@ model Brigade {
   id       String     @id
   name     String
   priority Priority   @default(GREEN)
-  needs    String[]   @default([])
   lat      Float
   lng      Float
+  needs    String[]   @default([])
   Alert    Alert[]
   Delivery Delivery[]
 }
