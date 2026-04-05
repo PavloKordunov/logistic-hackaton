@@ -140,20 +140,20 @@ const CreateRouteModal: React.FC<CreateRouteModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-2 sm:p-4">
       <motion.div
         initial={{ opacity: 0, scale: 0.95, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 20 }}
-        className="w-full max-w-4xl bg-[#0a0a0a] border border-white/10 notched-corner max-h-[90vh] flex flex-col shadow-2xl shadow-military-orange/5"
+        className="w-full max-w-4xl bg-[#0a0a0a] border border-white/10 notched-corner max-h-[96vh] sm:max-h-[90vh] flex flex-col shadow-2xl shadow-military-orange/5"
       >
-        <div className="flex items-center justify-between p-6 border-b border-white/10 bg-white/[0.02]">
+        <div className="flex items-start sm:items-center justify-between p-4 sm:p-6 border-b border-white/10 bg-white/[0.02] gap-3">
           <div className="flex items-center gap-4">
             <div className="p-3 bg-military-orange/10 text-military-orange notched-corner">
               <Route size={24} />
             </div>
             <div>
-              <h2 className="text-2xl font-black text-white uppercase tracking-tighter italic">
+              <h2 className="text-xl sm:text-2xl font-black text-white uppercase tracking-tighter italic">
                 Формування рейсу
               </h2>
               <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">
@@ -169,7 +169,7 @@ const CreateRouteModal: React.FC<CreateRouteModalProps> = ({
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-6 space-y-8 custom-scrollbar">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 sm:space-y-8 custom-scrollbar">
           <AnimatePresence>
             {destinations.map((dest, index) => (
               <motion.div
@@ -205,7 +205,7 @@ const CreateRouteModal: React.FC<CreateRouteModalProps> = ({
                 </div>
 
                 {/* Вибір бригади та пріоритету */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
                   <div className="space-y-2">
                     <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] flex items-center gap-2">
                       <MapPin size={12} /> Підрозділ / Бригада
@@ -232,7 +232,7 @@ const CreateRouteModal: React.FC<CreateRouteModalProps> = ({
                     <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] flex items-center gap-2">
                       <ShieldAlert size={12} /> Пріоритет
                     </label>
-                    <div className="flex gap-2">
+                      <div className="grid grid-cols-3 gap-2">
                       {(["GREEN", "YELLOW", "RED"] as const).map((p) => (
                         <button
                           key={p}
@@ -266,7 +266,7 @@ const CreateRouteModal: React.FC<CreateRouteModalProps> = ({
 
                   <div className="space-y-3">
                     {dest.resources.map((res, rIndex) => (
-                      <div key={res.id} className="flex gap-3 items-start">
+                      <div key={res.id} className="grid grid-cols-1 sm:grid-cols-[1fr_180px_auto] gap-3 items-start">
                         <input
                           type="text"
                           placeholder="Назва (напр. Турнікети СІЧ)"
@@ -293,7 +293,7 @@ const CreateRouteModal: React.FC<CreateRouteModalProps> = ({
                               e.target.value,
                             )
                           }
-                          className="w-1/3 bg-military-gray/80 border border-white/10 text-white p-2.5 outline-none focus:border-military-orange notched-corner text-xs font-mono font-bold"
+                          className="w-full bg-military-gray/80 border border-white/10 text-white p-2.5 outline-none focus:border-military-orange notched-corner text-xs font-mono font-bold"
                         />
                         <button
                           onClick={() => removeResource(dest.id, res.id)}
@@ -330,16 +330,16 @@ const CreateRouteModal: React.FC<CreateRouteModalProps> = ({
           </button>
         </div>
 
-        <div className="p-6 border-t border-white/10 bg-military-gray/30 flex justify-end gap-4 mt-auto">
+        <div className="p-4 sm:p-6 border-t border-white/10 bg-military-gray/30 flex flex-col-reverse sm:flex-row justify-end gap-3 sm:gap-4 mt-auto">
           <button
             onClick={onClose}
-            className="px-8 py-3 bg-transparent text-slate-400 hover:text-white text-[10px] font-black uppercase tracking-widest transition-colors"
+            className="px-6 sm:px-8 py-3 bg-transparent text-slate-400 hover:text-white text-[10px] font-black uppercase tracking-widest transition-colors"
           >
             Відмінити
           </button>
           <button
             onClick={handleSave}
-            className="px-8 py-3 bg-military-orange hover:bg-[#ffb033] text-black text-xs font-black uppercase tracking-[0.2em] notched-button shadow-[0_0_20px_rgba(255,157,0,0.2)] transition-all flex items-center gap-2"
+            className="px-6 sm:px-8 py-3 bg-military-orange hover:bg-[#ffb033] text-black text-xs font-black uppercase tracking-[0.2em] notched-button shadow-[0_0_20px_rgba(255,157,0,0.2)] transition-all flex items-center justify-center gap-2"
           >
             <Route size={16} /> Сформувати рейс
           </button>

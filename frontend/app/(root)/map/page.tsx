@@ -93,9 +93,9 @@ export const mockTrucks: Truck[] = [
 
 export default function DashboardPage() {
   return (
-    <main className="min-h-screen bg-[#050505] p-6 font-mono text-white selection:bg-[#FF9900] selection:text-black">
+    <main className="min-h-screen bg-[#050505] p-4 sm:p-6 lg:p-8 font-mono text-white selection:bg-[#FF9900] selection:text-black">
       <div className="max-w-[1600px] mx-auto space-y-6">
-        <header className="flex justify-between items-end border-b border-[#222222] pb-4">
+        <header className="flex flex-col gap-4 lg:flex-row lg:justify-between lg:items-end border-b border-[#222222] pb-4">
           <div>
             <div className="flex items-center gap-3 mb-1">
               <div className="w-8 h-8 bg-[#FF9900] ui-cut-sm flex items-center justify-center text-black font-bold text-xl">
@@ -112,8 +112,8 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div className="flex gap-6 items-center">
-            <div className="text-right border-r border-[#222222] pr-6">
+          <div className="flex flex-wrap gap-4 sm:gap-6 items-center">
+            <div className="text-left sm:text-right sm:border-r border-[#222222] sm:pr-6">
               <div className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">
                 Система
               </div>
@@ -123,7 +123,7 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            <div className="ui-cut-sm bg-[#FF1111] text-white px-5 py-2.5 text-xs font-bold flex items-center gap-3 uppercase tracking-widest cursor-pointer hover:bg-red-600 transition-colors">
+            <div className="ui-cut-sm bg-[#FF1111] text-white px-4 sm:px-5 py-2.5 text-[10px] sm:text-xs font-bold flex items-center gap-3 uppercase tracking-widest cursor-pointer hover:bg-red-600 transition-colors">
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full bg-white opacity-75"></span>
                 <span className="relative inline-flex h-2 w-2 bg-white"></span>
