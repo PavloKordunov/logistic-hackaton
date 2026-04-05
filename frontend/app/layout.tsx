@@ -25,16 +25,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${inter.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col">
-        <div className="flex h-screen w-full overflow-hidden bg-military-black text-slate-200 font-sans">
-          <SideBar />
-          <main className="flex-1 flex flex-col overflow-hidden relative">
-            <div className="absolute inset-0 tactical-grid opacity-50 pointer-events-none" />
-            <Header />
-            {children}
-          </main>
-        </div>
-      </body>
+      <body className="min-h-full flex flex-col">{children}</body>
     </html>
   );
 }
