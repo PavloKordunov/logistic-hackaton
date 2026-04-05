@@ -19,4 +19,9 @@ export class RouteController {
   getDriverRoute(@Param('vehicleId') vehicleId: string) {
     return this.routeService.getDriverRoute(vehicleId);
   }
+
+  @Get(':routeId/geometry')
+  getRouteGeometry(@Param('routeId') routeId: string) {
+    return this.routeService.getRouteGeometry(routeId);
+  }
 }
