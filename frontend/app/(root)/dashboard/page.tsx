@@ -21,6 +21,7 @@ import {
   Truck,
   RouteInfo,
 } from "@/components/map/MapWrapper";
+import { useEffect, useState } from "react";
 
 const priorityData = [
   { name: "12:00", green: 40, yellow: 24, red: 10 },
@@ -214,6 +215,35 @@ const KPICard = ({
 );
 
 export default function App() {
+  const [routes, setRoutes] = useState<RouteInfo[]>([]);
+
+  useEffect(() => {
+    fetchRoutes();
+  }, []);
+
+  const fetchRoutes = async () => {
+    const token = localStorage.getItem("token");
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/routes`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!res.ok) {
+        throw new Error(`${res.status}`);
+      }
+
+      const data = await res.json();
+      setRoutes(data);
+      console.log("Дані маршрутів:", data);
+    } catch (error) {
+      console.error("Деталі помилки:", error);
+    }
+  };
+
   return (
     <div className="flex-1 overflow-y-auto p-10 space-y-10 relative z-10">
       <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -408,7 +438,10 @@ export default function App() {
             </div>
           </div>
         </div> */}
-        <div className="lg:col-span-7 military-panel notched-corner relative overflow-hidden h-[550px] bg-black">
+        <div
+          id="map"
+          className="lg:col-span-7 military-panel notched-corner relative overflow-hidden h-[550px] bg-black"
+        >
           <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-[#FF9900] -translate-x-[1px] -translate-y-[1px] z-10"></div>
           <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-[#FF9900] translate-x-[1px] translate-y-[1px] z-10"></div>
 
@@ -416,14 +449,11 @@ export default function App() {
             warehouses={mockWarehouses}
             brigades={mockBrigades}
             trucks={mockTrucks}
-            routes={mockRoutes}
+            routes={routes}
           />
         </div>
 
-        <div
-          id="map"
-          className="lg:col-span-3 flex flex-col gap-6 overflow-hidden"
-        >
+        <div className="lg:col-span-3 flex flex-col gap-6 overflow-hidden">
           <div className="flex items-center justify-between px-2">
             <h3 className="font-black text-xs uppercase tracking-[0.2em] text-white">
               Активні Завдання

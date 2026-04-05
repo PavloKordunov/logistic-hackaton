@@ -20,6 +20,11 @@ export class RouteController {
     return this.routeService.getDriverRoute(vehicleId);
   }
 
+  @Get()
+  getAllRoutes() {
+    return this.routeService.getAllRoutes();
+  }
+
   @Get(':routeId/geometry')
   getRouteGeometry(@Param('routeId') routeId: string) {
     return this.routeService.getRouteGeometry(routeId);

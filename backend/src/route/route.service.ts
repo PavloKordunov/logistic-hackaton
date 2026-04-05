@@ -65,7 +65,10 @@ export class RouteService {
         // 4. Allocate resources greedily based on required limit
         let availableQuantity = resource.quantity;
         let totalAllocated = 0;
-        const allocatedTargets: { target: typeof dto.targets[0], allocatedAmount: number }[] = [];
+        const allocatedTargets: {
+          target: (typeof dto.targets)[0];
+          allocatedAmount: number;
+        }[] = [];
 
         for (const target of sortedTargets) {
           if (availableQuantity <= 0) break;
@@ -76,7 +79,9 @@ export class RouteService {
         }
 
         if (allocatedTargets.length === 0) {
-          throw new ConflictException('Could not allocate any resources to targets');
+          throw new ConflictException(
+            'Could not allocate any resources to targets',
+          );
         }
 
         const vehicle = await tx.vehicle.findFirst({
@@ -175,6 +180,12 @@ export class RouteService {
     });
   }
 
+  getAllRoutes() {
+    return this.prisma.route.findMany({
+      where: { isActive: true },
+    });
+  }
+
   async getRouteGeometry(routeId: string) {
     const route = await this.prisma.route.findFirst({
       where: { id: routeId },
@@ -193,9 +204,9 @@ export class RouteService {
 
     const waypoints: [number, number][] = [
       [route.Warehouse.lng, route.Warehouse.lat],
-      ...route.Delivery
-        .filter((d) => d.Brigade)
-        .map((d) => [d.Brigade.lng, d.Brigade.lat] as [number, number]),
+      ...route.Delivery.filter((d) => d.Brigade).map(
+        (d) => [d.Brigade.lng, d.Brigade.lat] as [number, number],
+      ),
     ];
 
     if (waypoints.length < 2) {
@@ -204,7 +215,9 @@ export class RouteService {
       );
     }
 
-    const coordinates = waypoints.map(([lng, lat]) => `${lng},${lat}`).join(';');
+    const coordinates = waypoints
+      .map(([lng, lat]) => `${lng},${lat}`)
+      .join(';');
     const osrmUrl = `http://router.project-osrm.org/route/v1/driving/${coordinates}?overview=full&geometries=geojson`;
 
     try {
@@ -230,7 +243,9 @@ export class RouteService {
           ? String((error as { message: unknown }).message)
           : 'Unknown OSRM error';
 
-      throw new BadGatewayException(`Failed to fetch route geometry: ${message}`);
+      throw new BadGatewayException(
+        `Failed to fetch route geometry: ${message}`,
+      );
     }
   }
 }

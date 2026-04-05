@@ -112,33 +112,91 @@ const MapComponent = ({
     if (routes.length === 0) return;
 
     const fetchRealRoads = async () => {
+      console.log("Маршрути для запиту геометрії:", routes);
       const fetchedRoutes = await Promise.all(
         routes.map(async (route) => {
-          const start = route.coordinates[0];
-          const end = route.coordinates[route.coordinates.length - 1];
-
+          const token = localStorage.getItem("token");
           try {
-            const url = `https://router.project-osrm.org/route/v1/driving/${start[1]},${start[0]};${end[1]},${end[0]}?overview=full&geometries=geojson`;
-            const response = await fetch(url);
+            // const routesJson = await fetch(
+            //   `${process.env.NEXT_PUBLIC_BASE_URL}/routes`,
+            //   {
+            //     method: "GET",
+            //     headers: {
+            //       "Content-Type": "application/json",
+            //       Authorization: `Bearer ${token}`,
+            //     },
+            //   },
+            // );
+            // const routesData = await routesJson.json();
+            // console.log("Отримані маршрути з бекенду:", routesData);
+            const response = await fetch(
+              `${process.env.NEXT_PUBLIC_BASE_URL}/routes/${route.id}/geometry`,
+              {
+                method: "GET",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${token}`,
+                },
+              },
+            );
             const data = await response.json();
-
-            if (data.routes && data.routes.length > 0) {
-              const roadCoords = data.routes[0].geometry.coordinates.map(
-                (coord: [number, number]) => [coord[1], coord[0]],
+            console.log("OSRM response data:", data);
+            if (data && Array.isArray(data.coordinates)) {
+              const roadCoords = data.coordinates.map(
+                (coord: number[]) => [coord[1], coord[0]] as [number, number],
               );
+
               return { id: route.id, coords: roadCoords };
             }
           } catch (error) {
             console.error("Помилка OSRM:", error);
           }
-          return { id: route.id, coords: route.coordinates };
+          if (route.coordinates && route.coordinates.length > 0) {
+            return { id: route.id, coords: route.coordinates };
+          }
+
+          return null;
         }),
       );
       console.log("Отримані реальні маршрути:", fetchedRoutes);
-      setRealRoutes(fetchedRoutes);
+      setRealRoutes(
+        fetchedRoutes.filter(
+          (r): r is { id: string; coords: [number, number][] } => r !== null,
+        ),
+      );
     };
     fetchRealRoads();
   }, [routes]);
+
+  // useEffect(() => {
+  //   fetchOrders();
+  // }, []);
+
+  // const fetchOrders = async () => {
+  //   const token = localStorage.getItem("token");
+  //   try {
+  //     const res = await fetch(
+  //       `${process.env.NEXT_PUBLIC_BASE_URL}/routes`,
+  //       {
+  //         method: "GET",
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //           Authorization: `Bearer ${token}`,
+  //         },
+  //       },
+  //     );
+
+  //     if (!res.ok) {
+  //       throw new Error(`${res.status}`);
+  //     }
+
+  //     const data = await res.json();
+  //     setOrdersData(data);
+  //     console.log("Дані замовлень:", data);
+  //   } catch (error) {
+  //     console.error("Деталі помилки:", error);
+  //   }
+  // };
 
   return (
     <div className="relative">
