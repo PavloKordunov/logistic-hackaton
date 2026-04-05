@@ -27,4 +27,4 @@ COPY --from=builder /app/prisma ./prisma
 
 EXPOSE 8080
 
-CMD ["sh", "-c", "npx prisma db push && npm run start:prod"]
+CMD npx prisma db push && node dist/src/main.js
