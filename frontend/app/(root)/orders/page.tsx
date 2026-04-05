@@ -1,6 +1,6 @@
 "use client";
 
-import { MapPin, RefreshCw, TrendingUp } from "lucide-react";
+import { MapPin, RefreshCw, TrendingUp, X } from "lucide-react";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 
@@ -63,11 +63,8 @@ import { useEffect, useState } from "react";
 
 const OrdersPage = () => {
   const [ordersData, setOrdersData] = useState<any[]>([]);
-  const [selectedOrderId, setSelectedOrderId] = useState<string | null>(
-    "#4782",
-  );
-  const selectedOrder =
-    ordersData.find((o) => o.id === selectedOrderId) || ordersData[0];
+  const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
+  const selectedOrder = ordersData.find((o) => o.id === selectedOrderId);
   useEffect(() => {
     fetchOrders();
   }, []);
@@ -119,10 +116,10 @@ const OrdersPage = () => {
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -20 }}
-      className="h-full flex overflow-hidden"
+      className="h-full flex flex-col xl:flex-row overflow-hidden"
     >
-      <div className="flex-1 overflow-y-auto p-10 space-y-8 custom-scrollbar">
-        <div className="flex items-center gap-4 border-b border-white/10 pb-4">
+      <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-10 space-y-6 sm:space-y-8 custom-scrollbar min-w-0">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-4 border-b border-white/10 pb-4">
           <button className="px-6 py-2 bg-military-orange text-black text-[10px] font-black uppercase tracking-widest notched-button">
             Активні
           </button>
@@ -138,7 +135,8 @@ const OrdersPage = () => {
         </div>
 
         <div className="military-panel notched-corner overflow-hidden">
-          <table className="w-full text-left border-collapse">
+          <div className="overflow-x-auto">
+          <table className="w-full min-w-[860px] text-left border-collapse">
             <thead>
               <tr className="bg-military-gray border-b border-white/10">
                 <th className="px-6 py-4 text-[9px] font-black uppercase tracking-[0.2em] text-slate-500">
@@ -236,26 +234,96 @@ const OrdersPage = () => {
               ))}
             </tbody>
           </table>
+          </div>
         </div>
+
+        {selectedOrder && (
+          <div className="xl:hidden w-full bg-military-black border border-white/10 p-4 sm:p-6 space-y-6 overflow-y-auto custom-scrollbar">
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-mono font-black text-slate-500 uppercase tracking-widest">
+                  Деталі Замовлення
+                </span>
+                <div className="flex items-center gap-2">
+                  <span
+                    className={`
+                        text-[10px] font-black px-3 py-1 uppercase tracking-widest notched-corner
+                        ${selectedOrder.priority === "RED" ? "bg-red-600 text-white" : "bg-military-orange text-black"}
+                      `}
+                  >
+                    {selectedOrder.priority}
+                  </span>
+                  <button
+                    onClick={() => setSelectedOrderId(null)}
+                    className="p-2 text-slate-400 hover:text-white"
+                    aria-label="Close order details"
+                  >
+                    <X size={16} />
+                  </button>
+                </div>
+              </div>
+              <h2 className="text-xl sm:text-2xl font-black uppercase italic tracking-tighter">
+                {selectedOrder.Brigade.name}
+              </h2>
+            </div>
+
+            <div className="military-panel notched-corner p-6 space-y-4">
+              <div className="flex justify-between border-b border-white/5 pb-3">
+                <span className="text-[10px] font-black uppercase text-slate-500">
+                  Вантаж
+                </span>
+                <span className="text-xs font-black text-white uppercase">
+                  {selectedOrder.Resource.name}
+                </span>
+              </div>
+              <div className="flex justify-between border-b border-white/5 pb-3">
+                <span className="text-[10px] font-black uppercase text-slate-500">
+                  Кількість
+                </span>
+                <span className="text-xs font-black text-military-orange">
+                  {selectedOrder.Resource.quantity}
+                </span>
+              </div>
+              <div className="flex justify-between border-b border-white/5 pb-3">
+                <span className="text-[10px] font-black uppercase text-slate-500">
+                  Статус
+                </span>
+                <span className="text-xs font-black text-emerald-500 uppercase">
+                  {selectedOrder.status}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-[10px] font-black uppercase text-slate-500">
+                  Час Створення
+                </span>
+                <span className="text-xs font-black text-white uppercase">
+                  {getRelativeTime(selectedOrder.updatedAt)}
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
-      <div className="w-[400px] h-full bg-military-black border-l border-white/10 p-8 space-y-8 overflow-y-auto custom-scrollbar">
+      <div className="hidden xl:block w-full xl:w-[400px] h-full bg-military-black border-t xl:border-t-0 xl:border-l border-white/10 p-4 sm:p-6 xl:p-8 space-y-6 sm:space-y-8 overflow-y-auto custom-scrollbar">
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <span className="text-[10px] font-mono font-black text-slate-500 uppercase tracking-widest">
               Деталі Замовлення
             </span>
-            <span
-              className={`
+            {selectedOrder && (
+              <span
+                className={`
                         text-[10px] font-black px-3 py-1 uppercase tracking-widest notched-corner
-                        ${selectedOrder?.priority === "RED" ? "bg-red-600 text-white" : "bg-military-orange text-black"}
+                        ${selectedOrder.priority === "RED" ? "bg-red-600 text-white" : "bg-military-orange text-black"}
                       `}
-            >
-              {selectedOrder?.priority}
-            </span>
+              >
+                {selectedOrder.priority}
+              </span>
+            )}
           </div>
-          <h2 className="text-2xl font-black uppercase italic tracking-tighter">
-            {selectedOrder?.Brigade.name}
+          <h2 className="text-xl sm:text-2xl font-black uppercase italic tracking-tighter">
+            {selectedOrder?.Brigade.name ?? "Оберіть замовлення зі списку"}
           </h2>
         </div>
 
@@ -265,7 +333,7 @@ const OrdersPage = () => {
               Вантаж
             </span>
             <span className="text-xs font-black text-white uppercase">
-              {selectedOrder?.Resource.name}
+              {selectedOrder?.Resource?.name ?? "-"}
             </span>
           </div>
           <div className="flex justify-between border-b border-white/5 pb-3">
@@ -273,7 +341,7 @@ const OrdersPage = () => {
               Кількість
             </span>
             <span className="text-xs font-black text-military-orange">
-              {selectedOrder?.Resource.quantity}
+              {selectedOrder?.Resource?.quantity ?? "-"}
             </span>
           </div>
           <div className="flex justify-between border-b border-white/5 pb-3">
@@ -281,7 +349,7 @@ const OrdersPage = () => {
               Статус
             </span>
             <span className="text-xs font-black text-emerald-500 uppercase">
-              {selectedOrder?.status}
+              {selectedOrder?.status ?? "-"}
             </span>
           </div>
           <div className="flex justify-between">
@@ -289,7 +357,7 @@ const OrdersPage = () => {
               Час Створення
             </span>
             <span className="text-xs font-black text-white uppercase">
-              {getRelativeTime(selectedOrder?.updatedAt)}
+              {selectedOrder?.updatedAt ? getRelativeTime(selectedOrder.updatedAt) : "-"}
             </span>
           </div>
         </div>

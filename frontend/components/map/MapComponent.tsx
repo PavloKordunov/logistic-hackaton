@@ -146,7 +146,7 @@ const MapComponent = ({
         <MapContainer
           center={defaultCenter}
           zoom={6}
-          className="h-[600px] w-full z-0 bg-[#0a0a0a]"
+          className="h-[380px] sm:h-[500px] lg:h-[600px] w-full z-0 bg-[#0a0a0a]"
           ref={setMap}
         >
           <TileLayer
@@ -158,12 +158,10 @@ const MapComponent = ({
             <Polyline
               key={route.id}
               positions={route.coords}
-              pathOptions={{
-                color: UI_COLORS.ORANGE,
-                weight: 2,
-                dashArray: "6, 8",
-                className: "animate-route-dash",
-              }}
+              color={UI_COLORS.ORANGE}
+              weight={2}
+              dashArray="6, 8"
+              className="animate-route-dash"
             />
           ))}
 

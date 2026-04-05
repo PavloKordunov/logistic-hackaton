@@ -49,11 +49,11 @@ const WarehousesPage = () => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
-      className="h-full overflow-y-auto p-10 custom-scrollbar"
+      className="h-full overflow-y-auto p-4 sm:p-6 lg:p-10 custom-scrollbar"
     >
-      <div className="mb-10 flex items-center justify-between border-b border-white/10 pb-6">
+      <div className="mb-8 sm:mb-10 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-white/10 pb-6">
         <div className="flex flex-col">
-          <h2 className="text-2xl font-black text-white uppercase tracking-tighter italic">
+          <h2 className="text-xl sm:text-2xl font-black text-white uppercase tracking-tighter italic">
             Склади Резервів
           </h2>
           <span className="text-[10px] font-black text-military-orange uppercase tracking-[0.2em]">
@@ -72,7 +72,7 @@ const WarehousesPage = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
         {warehouses?.map((w, idx) => (
           <motion.div
             key={w.id}

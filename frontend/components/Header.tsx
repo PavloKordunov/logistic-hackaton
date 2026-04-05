@@ -4,24 +4,35 @@ import { Bell, ChevronRight, Menu, Plus, ShieldAlert } from "lucide-react";
 import { useState } from "react";
 import CreateRouteModal from "./AddOrderModal";
 
-const Header = () => {
+const Header = ({
+  onToggleSidebar,
+}: {
+  onToggleSidebar?: () => void;
+}) => {
   const [isAlertActive, setIsAlertActive] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   return (
     <>
-      <header className="h-[80px] border-b border-white/10 bg-military-black/90 backdrop-blur-md flex items-center justify-between px-10 z-10">
-        <div className="flex items-center gap-10">
-          <div className="flex items-center gap-3 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">
+      <header className="h-[72px] sm:h-[80px] border-b border-white/10 bg-military-black/90 backdrop-blur-md flex items-center justify-between px-4 sm:px-6 lg:px-10 z-10 gap-3">
+        <div className="flex items-center gap-3 sm:gap-6 lg:gap-10 min-w-0">
+          <button
+            onClick={onToggleSidebar}
+            className="md:hidden p-2 text-slate-300 hover:text-white"
+            aria-label="Open navigation"
+          >
+            <Menu size={18} />
+          </button>
+          <div className="hidden sm:flex items-center gap-3 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 min-w-0">
             <span className="hover:text-military-orange cursor-pointer transition-colors">
               Головна
             </span>
             <ChevronRight size={14} className="text-slate-700" />
-            <span className="text-white">Оперативний Дашборд</span>
+            <span className="text-white truncate">Оперативний Дашборд</span>
           </div>
         </div>
 
-        <div className="flex items-center gap-8">
-          <div className="flex flex-col items-end">
+        <div className="flex items-center gap-2 sm:gap-4 lg:gap-8">
+          <div className="hidden lg:flex flex-col items-end">
             <span className="text-[9px] text-slate-500 font-black uppercase tracking-widest">
               Дизель / Market
             </span>
@@ -33,7 +44,7 @@ const Header = () => {
           <div className="relative cursor-pointer group">
             <button
               onClick={() => setIsModalOpen(true)}
-              className="px-6 py-3 bg-orange-600 hover:bg-orange-500 text-white text-[10px] font-black uppercase tracking-widest notched-button flex items-center gap-2"
+              className="px-3 sm:px-4 lg:px-6 py-2 sm:py-3 bg-orange-600 hover:bg-orange-500 text-white text-[10px] font-black uppercase tracking-widest notched-button flex items-center gap-2"
             >
               <Plus size={14} /> Створити рейс
             </button>
@@ -51,7 +62,7 @@ const Header = () => {
           <button
             onClick={() => setIsAlertActive(!isAlertActive)}
             className={`
-                       flex items-center gap-4 px-6 py-3 notched-button transition-all duration-300
+                       hidden sm:flex items-center gap-4 px-4 lg:px-6 py-2.5 lg:py-3 notched-button transition-all duration-300
                         ${
                           isAlertActive
                             ? "bg-red-600 text-white animate-pulse"

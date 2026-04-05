@@ -298,8 +298,8 @@ export default function App() {
     console.log("Trucks:", trucks);
   }, [brigades, warehouses, trucks]);
   return (
-    <div className="flex-1 overflow-y-auto p-10 space-y-10 relative z-10">
-      <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+    <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-10 space-y-8 lg:space-y-10 relative z-10">
+      <section className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
         <KPICard
           title="Активні маршрути"
           value="12"
@@ -328,13 +328,13 @@ export default function App() {
         />
       </section>
 
-      <section className="grid grid-cols-1 lg:grid-cols-10 gap-8">
-        <div className="lg:col-span-6 military-panel notched-corner p-8">
-          <div className="flex items-center justify-between mb-8">
+      <section className="grid grid-cols-1 lg:grid-cols-10 gap-4 sm:gap-6 lg:gap-8">
+        <div className="lg:col-span-6 military-panel notched-corner p-4 sm:p-6 lg:p-8">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6 sm:mb-8">
             <h3 className="font-black text-xs uppercase tracking-[0.2em] text-white">
               Динаміка пріоритетів (6г)
             </h3>
-            <div className="flex items-center gap-6 text-[9px] font-black uppercase tracking-widest">
+            <div className="flex flex-wrap items-center gap-3 sm:gap-6 text-[9px] font-black uppercase tracking-widest">
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 bg-military-orange" /> Норма
               </div>
@@ -346,7 +346,7 @@ export default function App() {
               </div>
             </div>
           </div>
-          <div className="h-[320px] w-full">
+          <div className="h-[260px] sm:h-[320px] w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
                 data={priorityData}
@@ -392,8 +392,8 @@ export default function App() {
           </div>
         </div>
 
-        <div className="lg:col-span-4 military-panel notched-corner p-8">
-          <div className="flex items-center justify-between mb-8">
+        <div className="lg:col-span-4 military-panel notched-corner p-4 sm:p-6 lg:p-8">
+          <div className="flex items-center justify-between mb-6 sm:mb-8">
             <h3 className="font-black text-xs uppercase tracking-[0.2em] text-white">
               Прогноз пального
             </h3>
@@ -402,7 +402,7 @@ export default function App() {
               className="text-slate-600 cursor-pointer hover:text-military-orange transition-colors"
             />
           </div>
-          <div className="h-[320px] w-full">
+          <div className="h-[260px] sm:h-[320px] w-full">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart
                 data={fuelData}
@@ -457,7 +457,7 @@ export default function App() {
         </div>
       </section>
 
-      <section className="grid grid-cols-1 lg:grid-cols-10 gap-8 pb-10">
+      <section className="grid grid-cols-1 lg:grid-cols-10 gap-4 sm:gap-6 lg:gap-8 pb-6 lg:pb-10">
         {/* <div className="lg:col-span-7 military-panel notched-corner relative overflow-hidden h-[550px] bg-black">
           <div className="absolute inset-0 tactical-grid opacity-30" />
 
@@ -491,7 +491,7 @@ export default function App() {
             </div>
           </div>
         </div> */}
-        <div className="lg:col-span-7 military-panel notched-corner relative overflow-hidden h-[550px] bg-black">
+        <div className="lg:col-span-7 military-panel notched-corner relative overflow-hidden h-[380px] sm:h-[460px] lg:h-[550px] bg-black">
           <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-[#FF9900] -translate-x-[1px] -translate-y-[1px] z-10"></div>
           <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-[#FF9900] translate-x-[1px] translate-y-[1px] z-10"></div>
 
@@ -505,7 +505,7 @@ export default function App() {
 
         <div
           id="map"
-          className="lg:col-span-3 flex flex-col gap-6 overflow-hidden"
+          className="lg:col-span-3 flex flex-col gap-4 sm:gap-6 overflow-hidden"
         >
           <div className="flex items-center justify-between px-2">
             <h3 className="font-black text-xs uppercase tracking-[0.2em] text-white">
@@ -515,7 +515,7 @@ export default function App() {
               Count: 42
             </span>
           </div>
-          <div className="flex-1 overflow-y-auto space-y-4 pr-2 custom-scrollbar">
+          <div className="flex-1 overflow-y-auto space-y-3 sm:space-y-4 pr-1 sm:pr-2 custom-scrollbar max-h-[360px] lg:max-h-none">
             {orders.map((order, idx) => (
               <motion.div
                 key={order.id}

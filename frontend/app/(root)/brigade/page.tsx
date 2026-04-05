@@ -142,9 +142,9 @@ const BrigadesPage = () => {
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -20 }}
-      className="h-full overflow-y-auto p-10 space-y-10 custom-scrollbar"
+      className="h-full overflow-y-auto p-4 sm:p-6 lg:p-10 space-y-8 sm:space-y-10 custom-scrollbar"
     >
-      <div className="flex items-center gap-4 border-b border-white/10 pb-6">
+      <div className="flex flex-wrap items-center gap-2 sm:gap-4 border-b border-white/10 pb-6">
         {[
           { id: "all", label: "Всі" },
           { id: "GREEN", label: "Зелений" },
@@ -165,7 +165,7 @@ const BrigadesPage = () => {
         ))}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
         {filteredBrigades.map((b, idx) => (
           <motion.div
             key={b.id}
@@ -260,8 +260,8 @@ const BrigadesPage = () => {
         ))}
       </div>
 
-      <div className="military-panel notched-corner p-8">
-        <div className="flex items-center justify-between mb-8">
+      <div className="military-panel notched-corner p-4 sm:p-6 lg:p-8">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6 sm:mb-8">
           <h3 className="font-black text-xs uppercase tracking-[0.2em] text-white">
             Динаміка пріоритетів бригад
           </h3>
@@ -269,8 +269,8 @@ const BrigadesPage = () => {
             <span>Оновлено: 2 хв тому</span>
           </div>
         </div>
-        <div className="h-[200px] w-full flex items-center justify-center gap-20">
-          <div className="h-full w-[300px]">
+        <div className="w-full flex flex-col lg:flex-row lg:items-center lg:justify-center gap-8 lg:gap-20">
+          <div className="h-[220px] w-full max-w-[320px] mx-auto lg:mx-0">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
                 data={priorityStats}
@@ -296,7 +296,7 @@ const BrigadesPage = () => {
               </BarChart>
             </ResponsiveContainer>
           </div>
-          <div className="grid grid-cols-3 gap-10">
+          <div className="grid grid-cols-3 gap-4 sm:gap-8 lg:gap-10">
             {priorityStats.map((stat) => (
               <div key={stat.name} className="flex flex-col">
                 <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1">

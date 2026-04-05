@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  X,
   LayoutDashboard,
   LogOut,
   Package,
@@ -9,22 +10,24 @@ import {
   Warehouse,
 } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
 
 const SidebarItem = ({
   icon: Icon,
   label,
   active = false,
   link,
+  onClick,
 }: {
   icon: any;
   label: string;
   active?: boolean;
   link: string;
+  onClick?: () => void;
 }) => (
   <Link
     href={link}
+    onClick={onClick}
     className={`flex items-center gap-3 px-6 py-4 cursor-pointer transition-all duration-200 group relative
       ${
         active
@@ -46,9 +49,15 @@ const SidebarItem = ({
   </Link>
 );
 
-const SideBar = () => {
-  const [activeItem, setActiveItem] = useState("Головна");
+const SideBar = ({
+  isOpen,
+  onClose,
+}: {
+  isOpen?: boolean;
+  onClose?: () => void;
+}) => {
   const router = useRouter();
+  const pathname = usePathname();
 
   const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:8080/";
   const logOut = async () => {
@@ -61,9 +70,30 @@ const SideBar = () => {
     });
     localStorage.removeItem("token");
     router.push("/");
+    onClose?.();
   };
   return (
-    <aside className="w-[260px] h-full bg-military-black border-r border-white/10 flex flex-col z-20">
+    <>
+      <div
+        className={`fixed inset-0 z-30 bg-black/60 transition-opacity md:hidden ${
+          isOpen ? "opacity-100" : "pointer-events-none opacity-0"
+        }`}
+        onClick={onClose}
+      />
+      <aside
+        className={`fixed inset-y-0 left-0 z-40 w-[260px] bg-military-black border-r border-white/10 flex flex-col transition-transform duration-300 md:static md:translate-x-0 ${
+          isOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+      <div className="flex items-center justify-end px-4 pt-4 md:hidden">
+        <button
+          onClick={onClose}
+          className="p-2 text-slate-400 hover:text-white"
+          aria-label="Close navigation"
+        >
+          <X size={18} />
+        </button>
+      </div>
       <div className="p-8 flex flex-col gap-4">
         <div className="flex flex-col gap-0">
           <div className="flex items-center gap-2">
@@ -90,38 +120,34 @@ const SideBar = () => {
       </div>
 
       <nav className="flex-1 mt-4">
-        <div onClick={() => setActiveItem("Головна")}>
           <SidebarItem
             icon={LayoutDashboard}
             label="Головна"
             link="/dashboard"
-            active={activeItem === "Головна"}
+            active={pathname === "/dashboard"}
+            onClick={onClose}
           />
-        </div>
-        <div onClick={() => setActiveItem("Замовлення")}>
           <SidebarItem
             icon={Package}
             label="Замовлення"
             link="/orders"
-            active={activeItem === "Замовлення"}
+            active={pathname === "/orders"}
+            onClick={onClose}
           />
-        </div>
-        <div onClick={() => setActiveItem("Склади")}>
           <SidebarItem
             icon={Warehouse}
             label="Склади"
             link="/warehouses"
-            active={activeItem === "Склади"}
+            active={pathname === "/warehouses"}
+            onClick={onClose}
           />
-        </div>
-        <div onClick={() => setActiveItem("Бригади")}>
           <SidebarItem
             icon={Users}
             label="Бригади"
             link="/brigade"
-            active={activeItem === "Бригади"}
+            active={pathname === "/brigade"}
+            onClick={onClose}
           />
-        </div>
       </nav>
 
       <div className="p-6 border-t border-white/5">
@@ -155,7 +181,9 @@ const SideBar = () => {
         </button>
       </div>
     </aside>
+    </>
   );
 };
 
 export default SideBar;
+    
