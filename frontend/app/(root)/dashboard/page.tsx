@@ -21,6 +21,7 @@ import {
   Truck,
   RouteInfo,
 } from "@/components/map/MapWrapper";
+import { useEffect, useState } from "react";
 
 const priorityData = [
   { name: "12:00", green: 40, yellow: 24, red: 10 },
@@ -73,12 +74,6 @@ const orders = [
 ];
 
 export const mockWarehouses: Warehouse[] = [
-  {
-    id: "W-01",
-    name: "Центральний Хаб (Київ)",
-    lat: 50.4501,
-    lng: 30.5234,
-  },
   {
     id: "W-02",
     name: "Південний Хаб (Дніпро)",
@@ -214,9 +209,110 @@ const KPICard = ({
 );
 
 export default function App() {
+  const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
+
+  const [brigades, setBrigades] = useState<Brigade[]>([]);
+  const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
+  const [trucks, setTrucks] = useState<Truck[]>([]);
+  const [routes, setRoutes] = useState<RouteInfo[]>([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const token = localStorage.getItem("token");
+
+        const [brigadesRes, warehousesRes, trucksRes, routesRes] =
+          await Promise.all([
+            fetch(`${BASE_URL}/brigades`, {
+              method: "GET",
+              headers: { Authorization: `Bearer ${token}` },
+            }),
+            fetch(`${BASE_URL}/warehouses`, {
+              method: "GET",
+              headers: { Authorization: `Bearer ${token}` },
+            }),
+            fetch(`${BASE_URL}/vehicles`, {
+              method: "GET",
+              headers: { Authorization: `Bearer ${token}` },
+            }),
+            fetch(`${BASE_URL}/routes`, {
+              method: "GET",
+              headers: { Authorization: `Bearer ${token}` },
+            }),
+          ]);
+
+        if (
+          !brigadesRes.ok ||
+          !warehousesRes.ok ||
+          !trucksRes.ok ||
+          !routesRes.ok
+        ) {
+          throw new Error("Помилка завантаження даних з сервера");
+        }
+
+        const brigadesData = await brigadesRes.json();
+        const warehousesData = await warehousesRes.json();
+        const trucksData = await trucksRes.json();
+        const routesData = await routesRes.json();
+
+        const formattedBrigades = brigadesData.map((b: any, idx: number) => {
+          let formattedNeeds = "Невідомі потреби";
+
+          if (Array.isArray(b.needs)) {
+            formattedNeeds =
+              b.needs.length > 0
+                ? b.needs.join(", ")
+                : "Немає нагальних потреб";
+          } else if (typeof b.needs === "string") {
+            formattedNeeds = b.needs;
+          }
+
+          return {
+            id: `B-0${idx + 1}`,
+            name: b.name,
+            priority: b.priority || "GREEN",
+            needs: formattedNeeds,
+            lat: b.lat,
+            lng: b.lng,
+          };
+        });
+
+        const formattedWarehouses = warehousesData.map(
+          (w: any, idx: number) => ({
+            id: `W-0${idx + 1}`,
+            name: w.name,
+            lat: w.lat,
+            lng: w.lng,
+          }),
+        );
+
+        const formattedTrucks = trucksData.map((t: any, idx: number) => ({
+          id: `T-0${idx + 1}`,
+          status: t.status,
+          lat: t.lat,
+          lng: t.lng,
+        }));
+
+        setBrigades(formattedBrigades);
+        setWarehouses(formattedWarehouses);
+        setTrucks(formattedTrucks);
+        setRoutes(routesData);
+      } catch (error) {
+        console.error("Помилка при завантаженні даних:", error);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  useEffect(() => {
+    console.log("Brigades:", brigades);
+    console.log("Warehouses:", warehouses);
+    console.log("Trucks:", trucks);
+  }, [brigades, warehouses, trucks]);
   return (
-    <div className="flex-1 overflow-y-auto p-10 space-y-10 relative z-10">
-      <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+    <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-10 space-y-8 lg:space-y-10 relative z-10">
+      <section className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
         <KPICard
           title="Активні маршрути"
           value="12"
@@ -245,13 +341,13 @@ export default function App() {
         />
       </section>
 
-      <section className="grid grid-cols-1 lg:grid-cols-10 gap-8">
-        <div className="lg:col-span-6 military-panel notched-corner p-8">
-          <div className="flex items-center justify-between mb-8">
+      <section className="grid grid-cols-1 lg:grid-cols-10 gap-4 sm:gap-6 lg:gap-8">
+        <div className="lg:col-span-6 military-panel notched-corner p-4 sm:p-6 lg:p-8">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6 sm:mb-8">
             <h3 className="font-black text-xs uppercase tracking-[0.2em] text-white">
               Динаміка пріоритетів (6г)
             </h3>
-            <div className="flex items-center gap-6 text-[9px] font-black uppercase tracking-widest">
+            <div className="flex flex-wrap items-center gap-3 sm:gap-6 text-[9px] font-black uppercase tracking-widest">
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 bg-military-orange" /> Норма
               </div>
@@ -263,7 +359,7 @@ export default function App() {
               </div>
             </div>
           </div>
-          <div className="h-[320px] w-full">
+          <div className="h-[260px] sm:h-[320px] w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
                 data={priorityData}
@@ -309,8 +405,8 @@ export default function App() {
           </div>
         </div>
 
-        <div className="lg:col-span-4 military-panel notched-corner p-8">
-          <div className="flex items-center justify-between mb-8">
+        <div className="lg:col-span-4 military-panel notched-corner p-4 sm:p-6 lg:p-8">
+          <div className="flex items-center justify-between mb-6 sm:mb-8">
             <h3 className="font-black text-xs uppercase tracking-[0.2em] text-white">
               Прогноз пального
             </h3>
@@ -319,7 +415,7 @@ export default function App() {
               className="text-slate-600 cursor-pointer hover:text-military-orange transition-colors"
             />
           </div>
-          <div className="h-[320px] w-full">
+          <div className="h-[260px] sm:h-[320px] w-full">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart
                 data={fuelData}
@@ -374,7 +470,7 @@ export default function App() {
         </div>
       </section>
 
-      <section className="grid grid-cols-1 lg:grid-cols-10 gap-8 pb-10">
+      <section className="grid grid-cols-1 lg:grid-cols-10 gap-4 sm:gap-6 lg:gap-8 pb-6 lg:pb-10">
         {/* <div className="lg:col-span-7 military-panel notched-corner relative overflow-hidden h-[550px] bg-black">
           <div className="absolute inset-0 tactical-grid opacity-30" />
 
@@ -413,14 +509,17 @@ export default function App() {
           <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-[#FF9900] translate-x-[1px] translate-y-[1px] z-10"></div>
 
           <MapWrapper
-            warehouses={mockWarehouses}
-            brigades={mockBrigades}
-            trucks={mockTrucks}
-            routes={mockRoutes}
+            warehouses={warehouses}
+            brigades={brigades}
+            trucks={trucks}
+            routes={routes}
           />
         </div>
 
-        <div className="lg:col-span-3 flex flex-col gap-6 overflow-hidden">
+        <div
+          id="map"
+          className="lg:col-span-3 flex flex-col gap-6 overflow-hidden"
+        >
           <div className="flex items-center justify-between px-2">
             <h3 className="font-black text-xs uppercase tracking-[0.2em] text-white">
               Активні Завдання
@@ -429,7 +528,7 @@ export default function App() {
               Count: 42
             </span>
           </div>
-          <div className="flex-1 overflow-y-auto space-y-4 pr-2 custom-scrollbar">
+          <div className="flex-1 overflow-y-auto space-y-3 sm:space-y-4 pr-1 sm:pr-2 custom-scrollbar max-h-[360px] lg:max-h-none">
             {orders.map((order, idx) => (
               <motion.div
                 key={order.id}

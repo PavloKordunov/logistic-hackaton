@@ -7,13 +7,114 @@ datasource db {
   provider   = "postgresql"
   url        = env("DATABASE_URL")
   directUrl  = env("DIRECT_URL")
+  extensions = [uuid_ossp(map: "uuid-ossp", schema: "extensions")]
+}
+
+model Alert {
+  id         String   @id
+  brigadeId  String
+  message    String
+  createdAt  DateTime @default(now())
+  isResolved Boolean  @default(false)
+  Brigade    Brigade  @relation(fields: [brigadeId], references: [id])
+}
+
+model Brigade {
+  id       String     @id
+  name     String
+  priority Priority   @default(GREEN)
+  lat      Float
+  lng      Float
+  needs    String[]   @default([])
+  Alert    Alert[]
+  Delivery Delivery[]
+}
+
+model Delivery {
+  id         String         @id
+  brigadeId  String
+  routeId    String?
+  resourceId String
+  quantity   Int
+  status     DeliveryStatus @default(PENDING)
+  stepOrder  Int?
+  createdAt  DateTime       @default(now())
+  priority   Priority       @default(GREEN)
+  updatedAt  DateTime
+  Brigade    Brigade        @relation(fields: [brigadeId], references: [id], onDelete: Cascade)
+  Resource   Resource       @relation(fields: [resourceId], references: [id])
+  Route      Route?         @relation(fields: [routeId], references: [id])
+}
+
+model Resource {
+  id          String     @id
+  name        String
+  quantity    Int
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime
+  warehouseId String
+  Delivery    Delivery[]
+  Warehouse   Warehouse  @relation(fields: [warehouseId], references: [id])
+}
+
+model Route {
+  id          String     @id
+  isActive    Boolean    @default(true)
+  vehicleId   String
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime
+  warehouseId String
+  Delivery    Delivery[]
+  Vehicle     Vehicle    @relation(fields: [vehicleId], references: [id])
+  Warehouse   Warehouse  @relation(fields: [warehouseId], references: [id])
 }
 
 model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  name      String?
-  password  String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id                 String   @id
+  email              String   @unique
+  name               String?
+  password           String
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime
+  hashedRefreshToken String?
+}
+
+model Vehicle {
+  id         String        @id
+  driverName String
+  lat        Float
+  lng        Float
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime
+  status     VehicleStatus @default(IDLE)
+  Route      Route[]
+}
+
+model Warehouse {
+  id       String     @id
+  name     String
+  lat      Float
+  lng      Float
+  city     String
+  region   String
+  Resource Resource[]
+  Route    Route[]
+}
+
+enum DeliveryStatus {
+  PENDING
+  IN_PROGRESS
+  DELIVERED
+}
+
+enum Priority {
+  GREEN
+  YELLOW
+  RED
+}
+
+enum VehicleStatus {
+  IDLE
+  EN_ROUTE
+  OFFLINE
 }
