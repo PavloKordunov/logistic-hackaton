@@ -11,11 +11,17 @@ async function bootstrap() {
       transformOptions: { enableImplicitConversion: true },
     }),
   );
+
   app.enableCors({
-    origin: 'http://localhost:3000',
+    origin: ['http://localhost:3000', '*'],
     methods: 'GET,HEAD,PUT,PATCH,DELETE,POST',
     credentials: true,
   });
-  await app.listen(process.env.PORT ?? 8080);
+
+  const port = process.env.PORT ?? 8080;
+
+  await app.listen(port, '0.0.0.0');
+
+  console.log(`Application is running on port: ${port}`);
 }
 bootstrap();
