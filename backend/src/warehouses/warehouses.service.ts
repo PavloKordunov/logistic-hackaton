@@ -6,6 +6,10 @@ export class WarehousesService {
   constructor(private readonly prisma: PrismaService) {}
 
   findAll() {
-    return this.prisma.warehouse.findMany();
+    return this.prisma.warehouse.findMany({
+      include: {
+        Resource: true,
+      },
+    });
   }
 }

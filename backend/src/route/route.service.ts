@@ -1,8 +1,10 @@
 import {
+  BadGatewayException,
   ConflictException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import axios from 'axios';
 import { randomUUID } from 'node:crypto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import {
@@ -171,5 +173,64 @@ export class RouteService {
         },
       },
     });
+  }
+
+  async getRouteGeometry(routeId: string) {
+    const route = await this.prisma.route.findFirst({
+      where: { id: routeId },
+      include: {
+        Warehouse: true,
+        Delivery: {
+          orderBy: { stepOrder: 'asc' },
+          include: { Brigade: true },
+        },
+      },
+    });
+
+    if (!route) {
+      throw new NotFoundException(`Route not found: ${routeId}`);
+    }
+
+    const waypoints: [number, number][] = [
+      [route.Warehouse.lng, route.Warehouse.lat],
+      ...route.Delivery
+        .filter((d) => d.Brigade)
+        .map((d) => [d.Brigade.lng, d.Brigade.lat] as [number, number]),
+    ];
+
+    if (waypoints.length < 2) {
+      throw new BadGatewayException(
+        'Route geometry requires at least warehouse and one delivery point',
+      );
+    }
+
+    const coordinates = waypoints.map(([lng, lat]) => `${lng},${lat}`).join(';');
+    const osrmUrl = `http://router.project-osrm.org/route/v1/driving/${coordinates}?overview=full&geometries=geojson`;
+
+    try {
+      const response = await axios.get<{
+        routes?: Array<{ geometry?: unknown }>;
+      }>(osrmUrl, {
+        timeout: 60_000,
+      });
+
+      const geometry = response.data?.routes?.[0]?.geometry;
+      if (!geometry) {
+        throw new BadGatewayException('OSRM response did not include geometry');
+      }
+
+      return geometry;
+    } catch (error: unknown) {
+      if (error instanceof BadGatewayException) {
+        throw error;
+      }
+
+      const message =
+        error && typeof error === 'object' && 'message' in error
+          ? String((error as { message: unknown }).message)
+          : 'Unknown OSRM error';
+
+      throw new BadGatewayException(`Failed to fetch route geometry: ${message}`);
+    }
   }
 }
