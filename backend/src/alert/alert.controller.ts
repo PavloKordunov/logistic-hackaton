@@ -1,8 +1,12 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
 import { AlertService } from './alert.service';
 import { CreateAlertDto } from './dto/create-alert.dto';
 
-@Controller('alert')
+import { UseGuards } from '@nestjs/common';
+import { JwtAuthGuard } from 'src/auth/jwtGuard';
+
+@UseGuards(JwtAuthGuard)
+@Controller('alerts')
 export class AlertController {
   constructor(private readonly alertService: AlertService) {}
 
@@ -17,8 +21,7 @@ export class AlertController {
   }
 
   @Patch(':id/resolve')
-  update(@Param('id') id: string) {
+  resolve(@Param('id') id: string) {
     return this.alertService.resolveAlert(id);
   }
-
 }
