@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  AlertTriangle,
   LayoutDashboard,
   LogOut,
   Package,
@@ -10,6 +9,7 @@ import {
   Warehouse,
 } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 const SidebarItem = ({
@@ -48,6 +48,7 @@ const SidebarItem = ({
 
 const SideBar = () => {
   const [activeItem, setActiveItem] = useState("Головна");
+  const router = useRouter();
   return (
     <aside className="w-[260px] h-full bg-military-black border-r border-white/10 flex flex-col z-20">
       <div className="p-8 flex flex-col gap-4">
@@ -80,7 +81,7 @@ const SideBar = () => {
           <SidebarItem
             icon={LayoutDashboard}
             label="Головна"
-            link="/"
+            link="/dashboard"
             active={activeItem === "Головна"}
           />
         </div>
@@ -104,16 +105,8 @@ const SideBar = () => {
           <SidebarItem
             icon={Users}
             label="Бригади"
-            link="/units"
+            link="/brigade"
             active={activeItem === "Бригади"}
-          />
-        </div>
-        <div onClick={() => setActiveItem("Алерти")}>
-          <SidebarItem
-            icon={AlertTriangle}
-            label="Алерти"
-            link="/alerts"
-            active={activeItem === "Алерти"}
           />
         </div>
       </nav>
@@ -140,7 +133,10 @@ const SideBar = () => {
             </div>
           </div>
         </div>
-        <button className="w-full mt-6 flex items-center justify-center gap-2 py-3 text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-white hover:bg-red-500/10 transition-all border border-transparent hover:border-red-500/20 notched-button">
+        <button
+          onClick={() => router.push("/")}
+          className="cursor-pointer w-full mt-6 flex items-center justify-center gap-2 py-3 text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-white hover:bg-red-500/10 transition-all border border-transparent hover:border-red-500/20 notched-button"
+        >
           <LogOut size={14} />
           <span>Завершити сесію</span>
         </button>
