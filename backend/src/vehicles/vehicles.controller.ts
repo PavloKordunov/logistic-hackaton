@@ -1,4 +1,12 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+} from '@nestjs/common';
 import { VehiclesService } from './vehicles.service';
 import { UpdateVehicleDto } from './dto/update-vehicle.dto';
 
@@ -10,7 +18,6 @@ import { JwtAuthGuard } from 'src/auth/jwtGuard';
 export class VehiclesController {
   constructor(private readonly vehiclesService: VehiclesService) {}
 
- 
   @Get()
   async findAll() {
     return this.vehiclesService.findAllVehicles();

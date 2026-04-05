@@ -21,6 +21,7 @@ import {
   Truck,
   RouteInfo,
 } from "@/components/map/MapWrapper";
+import { useEffect, useState } from "react";
 
 const priorityData = [
   { name: "12:00", green: 40, yellow: 24, red: 10 },
@@ -73,12 +74,6 @@ const orders = [
 ];
 
 export const mockWarehouses: Warehouse[] = [
-  {
-    id: "W-01",
-    name: "Центральний Хаб (Київ)",
-    lat: 50.4501,
-    lng: 30.5234,
-  },
   {
     id: "W-02",
     name: "Південний Хаб (Дніпро)",
@@ -214,6 +209,94 @@ const KPICard = ({
 );
 
 export default function App() {
+  const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
+
+  const [brigades, setBrigades] = useState<Brigade[]>([]);
+  const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
+  const [trucks, setTrucks] = useState<Truck[]>([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const token = localStorage.getItem("token");
+
+        const [brigadesRes, warehousesRes, trucksRes] = await Promise.all([
+          fetch(`${BASE_URL}/brigades`, {
+            method: "GET",
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+          fetch(`${BASE_URL}/warehouses`, {
+            method: "GET",
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+          fetch(`${BASE_URL}/vehicles`, {
+            method: "GET",
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+        ]);
+
+        if (!brigadesRes.ok || !warehousesRes.ok || !trucksRes.ok) {
+          throw new Error("Помилка завантаження даних з сервера");
+        }
+
+        const brigadesData = await brigadesRes.json();
+        const warehousesData = await warehousesRes.json();
+        const trucksData = await trucksRes.json();
+
+        const formattedBrigades = brigadesData.map((b: any, idx: number) => {
+          let formattedNeeds = "Невідомі потреби";
+
+          if (Array.isArray(b.needs)) {
+            formattedNeeds =
+              b.needs.length > 0
+                ? b.needs.join(", ")
+                : "Немає нагальних потреб";
+          } else if (typeof b.needs === "string") {
+            formattedNeeds = b.needs;
+          }
+
+          return {
+            id: `B-0${idx + 1}`,
+            name: b.name,
+            priority: b.priority || "GREEN",
+            needs: formattedNeeds,
+            lat: b.lat,
+            lng: b.lng,
+          };
+        });
+
+        const formattedWarehouses = warehousesData.map(
+          (w: any, idx: number) => ({
+            id: `W-0${idx + 1}`,
+            name: w.name,
+            lat: w.lat,
+            lng: w.lng,
+          }),
+        );
+
+        const formattedTrucks = trucksData.map((t: any, idx: number) => ({
+          id: `T-0${idx + 1}`,
+          status: t.status,
+          lat: t.lat,
+          lng: t.lng,
+        }));
+
+        setBrigades(formattedBrigades);
+        setWarehouses(formattedWarehouses);
+        setTrucks(formattedTrucks);
+      } catch (error) {
+        console.error("Помилка при завантаженні даних:", error);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  useEffect(() => {
+    console.log("Brigades:", brigades);
+    console.log("Warehouses:", warehouses);
+    console.log("Trucks:", trucks);
+  }, [brigades, warehouses, trucks]);
   return (
     <div className="flex-1 overflow-y-auto p-10 space-y-10 relative z-10">
       <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -413,9 +496,9 @@ export default function App() {
           <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-[#FF9900] translate-x-[1px] translate-y-[1px] z-10"></div>
 
           <MapWrapper
-            warehouses={mockWarehouses}
-            brigades={mockBrigades}
-            trucks={mockTrucks}
+            warehouses={warehouses}
+            brigades={brigades}
+            trucks={trucks}
             routes={mockRoutes}
           />
         </div>

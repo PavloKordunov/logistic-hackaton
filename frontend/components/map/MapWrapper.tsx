@@ -22,7 +22,7 @@ export interface Brigade {
 
 export interface Truck {
   id: string;
-  routeId?: string; // якщо немає - значить простоює
+  routeId?: string;
   status: "ACTIVE" | "IDLE";
   lat: number;
   lng: number;
