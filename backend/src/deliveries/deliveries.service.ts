@@ -49,4 +49,24 @@ export class DeliveriesService {
     }
     return delivery;
   }
+
+  async findAll() {
+    return this.prisma.delivery.findMany({
+      include: {
+        Brigade: true,
+        Resource: true,
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  async findOne(id: string) {
+    return this.prisma.delivery.findUnique({
+      where: { id },
+      include: {
+        Brigade: true,
+        Resource: true,
+      },
+    });
+  }
 }

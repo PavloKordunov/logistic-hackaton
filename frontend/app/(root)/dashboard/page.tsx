@@ -503,7 +503,10 @@ export default function App() {
           />
         </div>
 
-        <div className="lg:col-span-3 flex flex-col gap-6 overflow-hidden">
+        <div
+          id="map"
+          className="lg:col-span-3 flex flex-col gap-6 overflow-hidden"
+        >
           <div className="flex items-center justify-between px-2">
             <h3 className="font-black text-xs uppercase tracking-[0.2em] text-white">
               Активні Завдання

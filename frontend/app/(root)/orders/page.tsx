@@ -2,71 +2,116 @@
 
 import { MapPin, RefreshCw, TrendingUp } from "lucide-react";
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-const activeOrders = [
-  {
-    id: "#4782",
-    unit: "2-га Механізована",
-    type: "Турнікети",
-    amount: "120 шт.",
-    time: "11 хв тому",
-    priority: "RED",
-    status: "В дорозі",
-  },
-  {
-    id: "#4781",
-    unit: "1-ша Танкова",
-    type: "Пальне",
-    amount: "800 л",
-    time: "34 хв тому",
-    priority: "YELLOW",
-    status: "Завантажено",
-  },
-  {
-    id: "#4780",
-    unit: "93-тя Холодний Яр",
-    type: "БК 155мм",
-    amount: "40 од",
-    time: "1 год тому",
-    priority: "GREEN",
-    status: "В дорозі",
-  },
-  {
-    id: "#4779",
-    unit: "47-ма Маґура",
-    type: "Запчастини",
-    amount: "12 од",
-    time: "2 год тому",
-    priority: "YELLOW",
-    status: "Завантажено",
-  },
-  {
-    id: "#4778",
-    unit: "3-тя Штурмова",
-    type: "Медикаменти",
-    amount: "5 ящиків",
-    time: "3 год тому",
-    priority: "RED",
-    status: "В дорозі",
-  },
-  {
-    id: "#4777",
-    unit: "80-та ДШВ",
-    type: "Рації",
-    amount: "15 шт.",
-    time: "5 год тому",
-    priority: "GREEN",
-    status: "Завантажено",
-  },
-];
+// const activeOrders = [
+//   {
+//     id: "#4782",
+//     unit: "2-га Механізована",
+//     type: "Турнікети",
+//     amount: "120 шт.",
+//     time: "11 хв тому",
+//     priority: "RED",
+//     status: "В дорозі",
+//   },
+//   {
+//     id: "#4781",
+//     unit: "1-ша Танкова",
+//     type: "Пальне",
+//     amount: "800 л",
+//     time: "34 хв тому",
+//     priority: "YELLOW",
+//     status: "Завантажено",
+//   },
+//   {
+//     id: "#4780",
+//     unit: "93-тя Холодний Яр",
+//     type: "БК 155мм",
+//     amount: "40 од",
+//     time: "1 год тому",
+//     priority: "GREEN",
+//     status: "В дорозі",
+//   },
+//   {
+//     id: "#4779",
+//     unit: "47-ма Маґура",
+//     type: "Запчастини",
+//     amount: "12 од",
+//     time: "2 год тому",
+//     priority: "YELLOW",
+//     status: "Завантажено",
+//   },
+//   {
+//     id: "#4778",
+//     unit: "3-тя Штурмова",
+//     type: "Медикаменти",
+//     amount: "5 ящиків",
+//     time: "3 год тому",
+//     priority: "RED",
+//     status: "В дорозі",
+//   },
+//   {
+//     id: "#4777",
+//     unit: "80-та ДШВ",
+//     type: "Рації",
+//     amount: "15 шт.",
+//     time: "5 год тому",
+//     priority: "GREEN",
+//     status: "Завантажено",
+//   },
+// ];
 
 const OrdersPage = () => {
+  const [ordersData, setOrdersData] = useState<any[]>([]);
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(
     "#4782",
   );
   const selectedOrder =
-    activeOrders.find((o) => o.id === selectedOrderId) || activeOrders[0];
+    ordersData.find((o) => o.id === selectedOrderId) || ordersData[0];
+  useEffect(() => {
+    fetchOrders();
+  }, []);
+
+  const fetchOrders = async () => {
+    const token = localStorage.getItem("token");
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/deliveries`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+
+      if (!res.ok) {
+        throw new Error(`${res.status}`);
+      }
+
+      const data = await res.json();
+      setOrdersData(data);
+      console.log("Дані замовлень:", data);
+    } catch (error) {
+      console.error("Деталі помилки:", error);
+    }
+  };
+
+  const getRelativeTime = (dateString: string) => {
+    const now = new Date();
+    const past = new Date(dateString);
+    const diffInMs = now.getTime() - past.getTime();
+
+    const diffInMins = Math.floor(diffInMs / (1000 * 60));
+    const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
+    const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
+
+    if (diffInMins < 1) return "щойно";
+    if (diffInMins < 60) return `${diffInMins} хв. тому`;
+    if (diffInHours < 24) return `${diffInHours} год. тому`;
+    return `${diffInDays} дн. тому`;
+  };
 
   return (
     <motion.div
@@ -81,12 +126,12 @@ const OrdersPage = () => {
           <button className="px-6 py-2 bg-military-orange text-black text-[10px] font-black uppercase tracking-widest notched-button">
             Активні
           </button>
-          <button className="px-6 py-2 text-slate-500 hover:text-white text-[10px] font-black uppercase tracking-widest relative">
+          {/* <button className="px-6 py-2 text-slate-500 hover:text-white text-[10px] font-black uppercase tracking-widest relative">
             Нові
             <span className="absolute -top-1 -right-2 bg-red-600 text-white text-[8px] px-1.5 py-0.5 notched-corner">
               7
             </span>
-          </button>
+          </button> */}
           <button className="px-6 py-2 text-slate-500 hover:text-white text-[10px] font-black uppercase tracking-widest">
             Історія
           </button>
@@ -120,7 +165,7 @@ const OrdersPage = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5">
-              {activeOrders.map((order) => (
+              {ordersData.map((order) => (
                 <tr
                   key={order.id}
                   className={`
@@ -142,7 +187,7 @@ const OrdersPage = () => {
                       }}
                     />
                     <span className="text-[10px] font-mono font-black text-slate-400">
-                      {order.id}
+                      {order.id.slice(-4)}
                     </span>
                   </td>
                   <td className="px-6 py-4">
@@ -154,18 +199,18 @@ const OrdersPage = () => {
                                 `}
                       />
                       <span className="text-xs font-black uppercase tracking-tight">
-                        {order.unit}
+                        {order.Brigade.name}
                       </span>
                     </div>
                   </td>
                   <td className="px-6 py-4 text-xs font-bold text-slate-300">
-                    {order.type}
+                    {order.Resource.name}
                   </td>
                   <td className="px-6 py-4 text-xs font-mono font-black text-military-orange">
-                    {order.amount}
+                    {order.Resource.quantity}
                   </td>
                   <td className="px-6 py-4 text-[10px] font-black uppercase text-slate-500">
-                    {order.time}
+                    {getRelativeTime(order.updatedAt)}
                   </td>
                   <td className="px-6 py-4">
                     <span
@@ -203,14 +248,14 @@ const OrdersPage = () => {
             <span
               className={`
                         text-[10px] font-black px-3 py-1 uppercase tracking-widest notched-corner
-                        ${selectedOrder.priority === "RED" ? "bg-red-600 text-white" : "bg-military-orange text-black"}
+                        ${selectedOrder?.priority === "RED" ? "bg-red-600 text-white" : "bg-military-orange text-black"}
                       `}
             >
-              {selectedOrder.priority} ПРІОРИТЕТ
+              {selectedOrder?.priority}
             </span>
           </div>
           <h2 className="text-2xl font-black uppercase italic tracking-tighter">
-            {selectedOrder.unit}
+            {selectedOrder?.Brigade.name}
           </h2>
         </div>
 
@@ -220,7 +265,7 @@ const OrdersPage = () => {
               Вантаж
             </span>
             <span className="text-xs font-black text-white uppercase">
-              {selectedOrder.type}
+              {selectedOrder?.Resource.name}
             </span>
           </div>
           <div className="flex justify-between border-b border-white/5 pb-3">
@@ -228,7 +273,7 @@ const OrdersPage = () => {
               Кількість
             </span>
             <span className="text-xs font-black text-military-orange">
-              {selectedOrder.amount}
+              {selectedOrder?.Resource.quantity}
             </span>
           </div>
           <div className="flex justify-between border-b border-white/5 pb-3">
@@ -236,7 +281,7 @@ const OrdersPage = () => {
               Статус
             </span>
             <span className="text-xs font-black text-emerald-500 uppercase">
-              {selectedOrder.status}
+              {selectedOrder?.status}
             </span>
           </div>
           <div className="flex justify-between">
@@ -244,7 +289,7 @@ const OrdersPage = () => {
               Час Створення
             </span>
             <span className="text-xs font-black text-white uppercase">
-              {selectedOrder.time}
+              {getRelativeTime(selectedOrder?.updatedAt)}
             </span>
           </div>
         </div>

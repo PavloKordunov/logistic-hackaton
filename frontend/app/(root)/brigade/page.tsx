@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { MapPin, TrendingUp } from "lucide-react";
 import {
   BarChart,
@@ -11,89 +11,131 @@ import {
   Cell,
 } from "recharts";
 import { motion } from "framer-motion";
+import { useRouter } from "next/navigation";
 
-const brigades = [
-  {
-    id: "1",
-    name: "3-тя Окрема Штурмова",
-    number: "3 ОШБр",
-    priority: "RED",
-    location: "Бахмутський напрямок",
-    demand: 24,
-    needs: ["Турнікети: 120", "БК 155мм: 40", "Рації: 15"],
-    coordinates: "48.59, 37.99",
-  },
-  {
-    id: "2",
-    name: "47-ма Окрема Механізована",
-    number: "47 ОМБр",
-    priority: "RED",
-    location: "Авдіївський напрямок",
-    demand: 18,
-    needs: ["Запчастини: 12", "Пальне: 800л", "Медикаменти: 5я"],
-    coordinates: "48.13, 37.74",
-  },
-  {
-    id: "3",
-    name: "93-тя Холодний Яр",
-    number: "93 ОМБр",
-    priority: "YELLOW",
-    location: "Лиманський напрямок",
-    demand: 12,
-    needs: ["БК 122мм: 20", "Мастило: 50л"],
-    coordinates: "49.01, 37.61",
-  },
-  {
-    id: "4",
-    name: "80-та Окрема ДШВ",
-    number: "80 ОДШБр",
-    priority: "GREEN",
-    location: "Куп’янський напрямок",
-    demand: 8,
-    needs: ["Продукти: 200кг", "Вода: 500л"],
-    coordinates: "49.71, 37.61",
-  },
-  {
-    id: "5",
-    name: "1-ша Окрема Танкова",
-    number: "1 ОТБр",
-    priority: "YELLOW",
-    location: "Запорізький напрямок",
-    demand: 15,
-    needs: ["Пальне: 1200л", "Акумулятори: 8"],
-    coordinates: "47.83, 35.18",
-  },
-  {
-    id: "6",
-    name: "24-та Короля Данила",
-    number: "24 ОМБр",
-    priority: "GREEN",
-    location: "Торецький напрямок",
-    demand: 5,
-    needs: ["Форма: 50к", "Взуття: 30п"],
-    coordinates: "48.39, 37.84",
-  },
-];
-
-const priorityStats = [
-  { name: "RED", value: 2, color: "#ef4444" },
-  { name: "YELLOW", value: 2, color: "#f59e0b" },
-  { name: "GREEN", value: 2, color: "#ff9d00" },
-];
+// const brigades = [
+//   {
+//     id: "1",
+//     name: "3-тя Окрема Штурмова",
+//     number: "3 ОШБр",
+//     priority: "RED",
+//     location: "Бахмутський напрямок",
+//     demand: 24,
+//     needs: ["Турнікети: 120", "БК 155мм: 40", "Рації: 15"],
+//     coordinates: "48.59, 37.99",
+//   },
+//   {
+//     id: "2",
+//     name: "47-ма Окрема Механізована",
+//     number: "47 ОМБр",
+//     priority: "RED",
+//     location: "Авдіївський напрямок",
+//     demand: 18,
+//     needs: ["Запчастини: 12", "Пальне: 800л", "Медикаменти: 5я"],
+//     coordinates: "48.13, 37.74",
+//   },
+//   {
+//     id: "3",
+//     name: "93-тя Холодний Яр",
+//     number: "93 ОМБр",
+//     priority: "YELLOW",
+//     location: "Лиманський напрямок",
+//     demand: 12,
+//     needs: ["БК 122мм: 20", "Мастило: 50л"],
+//     coordinates: "49.01, 37.61",
+//   },
+//   {
+//     id: "4",
+//     name: "80-та Окрема ДШВ",
+//     number: "80 ОДШБр",
+//     priority: "GREEN",
+//     location: "Куп’янський напрямок",
+//     demand: 8,
+//     needs: ["Продукти: 200кг", "Вода: 500л"],
+//     coordinates: "49.71, 37.61",
+//   },
+//   {
+//     id: "5",
+//     name: "1-ша Окрема Танкова",
+//     number: "1 ОТБр",
+//     priority: "YELLOW",
+//     location: "Запорізький напрямок",
+//     demand: 15,
+//     needs: ["Пальне: 1200л", "Акумулятори: 8"],
+//     coordinates: "47.83, 35.18",
+//   },
+//   {
+//     id: "6",
+//     name: "24-та Короля Данила",
+//     number: "24 ОМБр",
+//     priority: "GREEN",
+//     location: "Торецький напрямок",
+//     demand: 5,
+//     needs: ["Форма: 50к", "Взуття: 30п"],
+//     coordinates: "48.39, 37.84",
+//   },
+// ];
 
 const BrigadesPage = () => {
   const [unitFilter, setUnitFilter] = useState<
-    "all" | "green" | "yellow" | "red" | "frontline"
+    "all" | "GREEN" | "YELLOW" | "RED" | "frontline"
   >("all");
-
-  const filteredBrigades = brigades.filter((b) => {
+  const [brigadesData, setBrigadesData] = useState<any[]>([]);
+  const route = useRouter();
+  const filteredBrigades = brigadesData.filter((b) => {
     if (unitFilter === "all") return true;
-    if (unitFilter === "green") return b.priority === "GREEN";
-    if (unitFilter === "yellow") return b.priority === "YELLOW";
-    if (unitFilter === "red") return b.priority === "RED";
-    if (unitFilter === "frontline") return b.demand > 15;
+    if (unitFilter === "GREEN") return b.priority === "GREEN";
+    if (unitFilter === "YELLOW") return b.priority === "YELLOW";
+    if (unitFilter === "RED") return b.priority === "RED";
+    //if (unitFilter === "frontline") return b.demand > 15;
     return true;
   });
+  const priorityStats = useMemo(() => {
+    const stats = {
+      RED: 0,
+      YELLOW: 0,
+      GREEN: 0,
+    };
+
+    brigadesData.forEach((b) => {
+      if (b.priority === "RED") stats.RED++;
+      else if (b.priority === "YELLOW") stats.YELLOW++;
+      else stats.GREEN++;
+    });
+
+    return [
+      { name: "Червоний", value: stats.RED, color: "#ef4444" },
+      { name: "Жовтий", value: stats.YELLOW, color: "#f59e0b" },
+      { name: "Зелений", value: stats.GREEN, color: "#09ff00ff" },
+    ];
+  }, [brigadesData]);
+
+  useEffect(() => {
+    fetchBrigades();
+  }, []);
+
+  const fetchBrigades = async () => {
+    const token = localStorage.getItem("token");
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/brigades`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!res.ok) {
+        throw new Error(`${res.status}`);
+      }
+
+      const data = await res.json();
+      setBrigadesData(data);
+      console.log("Дані бригад:", data);
+    } catch (error) {
+      console.error("Деталі помилки:", error);
+    }
+  };
 
   return (
     <motion.div
@@ -105,10 +147,10 @@ const BrigadesPage = () => {
       <div className="flex items-center gap-4 border-b border-white/10 pb-6">
         {[
           { id: "all", label: "Всі" },
-          { id: "green", label: "Зелений" },
-          { id: "yellow", label: "Жовтий" },
-          { id: "red", label: "Червоний" },
-          { id: "frontline", label: "Прифронтові" },
+          { id: "GREEN", label: "Зелений" },
+          { id: "YELLOW", label: "Жовтий" },
+          { id: "RED", label: "Червоний" },
+          //{ id: "frontline", label: "Прифронтові" },
         ].map((f) => (
           <button
             key={f.id}
@@ -137,7 +179,7 @@ const BrigadesPage = () => {
                   ? "#ef4444"
                   : b.priority === "YELLOW"
                     ? "#f59e0b"
-                    : "#ff9d00",
+                    : "#09ff00ff",
             }}
           >
             <div className="flex justify-between items-start mb-6">
@@ -157,7 +199,7 @@ const BrigadesPage = () => {
                       ? "bg-red-500 shadow-red-500/50"
                       : b.priority === "YELLOW"
                         ? "bg-amber-500 shadow-amber-500/50"
-                        : "bg-military-orange shadow-military-orange/50"
+                        : "bg-green-500 shadow-green-500/50"
                   }
                 `}
               />
@@ -183,7 +225,7 @@ const BrigadesPage = () => {
                 Критичні Потреби
               </h4>
               <div className="flex flex-wrap gap-2">
-                {b.needs.map((need, i) => (
+                {b.needs.map(({ need, i }: any) => (
                   <span
                     key={i}
                     className="text-[9px] font-black bg-military-gray px-2 py-1 notched-corner text-white uppercase tracking-widest border border-white/5"
@@ -195,7 +237,10 @@ const BrigadesPage = () => {
             </div>
 
             <div className="flex items-center gap-3">
-              <button className="flex-1 py-3 bg-military-gray hover:bg-military-orange hover:text-black text-[10px] font-black uppercase tracking-widest notched-button transition-all flex items-center justify-center gap-2">
+              <button
+                className="flex-1 py-3 bg-military-gray hover:bg-military-orange hover:text-black text-[10px] font-black uppercase tracking-widest notched-button transition-all flex items-center justify-center gap-2"
+                onClick={() => route.push(`/dashboard#map`)}
+              >
                 <MapPin size={14} /> На карті
               </button>
               <button
@@ -236,6 +281,7 @@ const BrigadesPage = () => {
                 <YAxis
                   dataKey="name"
                   type="category"
+                  width={80}
                   stroke="#525252"
                   fontSize={10}
                   fontWeight={900}

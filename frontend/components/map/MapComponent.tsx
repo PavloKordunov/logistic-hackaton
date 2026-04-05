@@ -134,6 +134,7 @@ const MapComponent = ({
           return { id: route.id, coords: route.coordinates };
         }),
       );
+      console.log("Отримані реальні маршрути:", fetchedRoutes);
       setRealRoutes(fetchedRoutes);
     };
     fetchRealRoads();
