@@ -18,20 +18,32 @@ const LoginPage = () => {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:8080/";
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError("");
 
-    setTimeout(() => {
-      if (email === "qwe@qwe.com" && password === "qweqwe") {
-        console.log("Успішна авторизація:", email);
-      } else {
-        setError("НЕВІРНІ ОБЛІКОВІ ДАНІ. ДОСТУП ЗАБОРОНЕНО.");
-        setIsLoading(false);
-      }
-    }, 800);
+    const res = await fetch(`${BASE_URL}/auth/login`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email, password }),
+    });
+
+    if (!res.ok) {
+      const errorData = await res.json();
+      setError(errorData.message || "Помилка авторизації");
+      setIsLoading(false);
+      return;
+    }
+
+    const data = await res.json();
+    localStorage.setItem("token", data.token.accessToken);
+    setIsLoading(false);
+
     router.push("/dashboard");
   };
 
@@ -136,11 +148,6 @@ const LoginPage = () => {
               <ShieldAlert size={14} />
               <span>Захищене з'єднання активне</span>
             </div>
-            {/* <p className="text-[8px] text-slate-700 text-center uppercase tracking-widest leading-relaxed">
-              Ця система призначена виключно для авторизованого персоналу.
-              <br />
-              Будь-яка спроба несанкціонованого доступу буде зафіксована.
-            </p> */}
           </div>
         </div>
       </motion.div>

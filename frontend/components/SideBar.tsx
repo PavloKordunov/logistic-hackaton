@@ -49,6 +49,19 @@ const SidebarItem = ({
 const SideBar = () => {
   const [activeItem, setActiveItem] = useState("Головна");
   const router = useRouter();
+
+  const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:8080/";
+  const logOut = async () => {
+    await fetch(`${BASE_URL}/auth/logout`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+    localStorage.removeItem("token");
+    router.push("/");
+  };
   return (
     <aside className="w-[260px] h-full bg-military-black border-r border-white/10 flex flex-col z-20">
       <div className="p-8 flex flex-col gap-4">
@@ -134,7 +147,7 @@ const SideBar = () => {
           </div>
         </div>
         <button
-          onClick={() => router.push("/")}
+          onClick={logOut}
           className="cursor-pointer w-full mt-6 flex items-center justify-center gap-2 py-3 text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-white hover:bg-red-500/10 transition-all border border-transparent hover:border-red-500/20 notched-button"
         >
           <LogOut size={14} />
