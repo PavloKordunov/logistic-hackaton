@@ -3,6 +3,10 @@ import { DeliveriesService } from './deliveries.service';
 import { CreateDeliveryDto } from './dto/create-delivery.dto';
 import { UpdateDeliveryDto } from './dto/update-deliveryStatus.dto';
 
+import { UseGuards } from '@nestjs/common';
+import { JwtAuthGuard } from 'src/auth/jwtGuard';
+
+@UseGuards(JwtAuthGuard)
 @Controller('deliveries')
 export class DeliveriesController {
   constructor(private readonly deliveriesService: DeliveriesService) {}

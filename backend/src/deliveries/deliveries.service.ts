@@ -1,49 +1,52 @@
 import { Injectable } from '@nestjs/common';
+import { randomUUID } from 'node:crypto';
 import { CreateDeliveryDto } from './dto/create-delivery.dto';
-import { UpdateDeliveryDto } from './dto/update-deliveryStatus.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { DeliveryStatus } from '@prisma/client';
 
 @Injectable()
 export class DeliveriesService {
-  constructor(private readonly prisma:PrismaService){}
+  constructor(private readonly prisma: PrismaService) {}
   async createDelivery(dto: CreateDeliveryDto) {
+    const now = new Date();
     return this.prisma.delivery.create({
-      data:{
-        brigadeId:dto.brigadeId,
-        resourceId:dto.resourceId,
-        quantity:dto.quantity
+      data: {
+        id: randomUUID(),
+        brigadeId: dto.brigadeId,
+        resourceId: dto.resourceId,
+        quantity: dto.quantity,
+        updatedAt: now,
       },
-      include:{
-        brigade:true,
-        resource:true
-      }
+      include: {
+        Brigade: true,
+        Resource: true,
+      },
     });
   }
 
   async findAllDeliveries() {
     return this.prisma.delivery.findMany({
-      include:{
-        brigade:true,
-        resource:true
+      include: {
+        Brigade: true,
+        Resource: true,
       },
-      orderBy:{createdAt:'desc'}
+      orderBy: { createdAt: 'desc' },
     });
   }
 
   async updateStatus(id: string, status: DeliveryStatus) {
-    const delivery=await this.prisma.delivery.update({
-      where:{id},
-      data:{status},
-      include:{brigade:true}
+    const delivery = await this.prisma.delivery.update({
+      where: { id },
+      data: { status, updatedAt: new Date() },
+      include: { Brigade: true },
     });
 
-    if(status==='DELIVERED' && delivery.brigade.priority==='RED'){
-       await this.prisma.delivery.update({
-        where:{id:delivery.brigadeId},
-        data:{priority:'GREEN'}
-       })
+    if (status === 'DELIVERED' && delivery.Brigade.priority === 'RED') {
+      await this.prisma.brigade.update({
+        where: { id: delivery.brigadeId },
+        data: { priority: 'GREEN' },
+      });
     }
-    return delivery
+    return delivery;
   }
 }

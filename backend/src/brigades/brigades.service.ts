@@ -1,15 +1,19 @@
 import { Injectable } from '@nestjs/common';
+import { randomUUID } from 'node:crypto';
 import { CreateBrigadeDto } from './dto/create-brigade.dto';
 import { UpdateBrigadeDto } from './dto/update-brigade.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class BrigadesService {
-  constructor(private readonly prisma:PrismaService){}
+  constructor(private readonly prisma: PrismaService) {}
   create(createBrigadeDto: CreateBrigadeDto) {
     return this.prisma.brigade.create({
-      data:{
-      ...createBrigadeDto
+      data: {
+        id: randomUUID(),
+        ...createBrigadeDto,
+        lat: createBrigadeDto.lat,
+        lng: createBrigadeDto.lng,
       },
     });
   }
@@ -24,8 +28,8 @@ export class BrigadesService {
 
   findOne(id: string) {
     return this.prisma.brigade.findUnique({
-      where:{id},
-      include:{deliveries:true,alerts:true}
+      where: { id },
+      include: { Delivery: true, Alert: true },
     });
   }
 

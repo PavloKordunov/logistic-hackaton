@@ -4,9 +4,9 @@ import { IsNotEmpty, IsNumber } from 'class-validator';
 export class UpdateVehicleDto {
     @IsNumber()
     @IsNotEmpty()
-    lat?:number;
+    lat: number;
 
     @IsNumber()
     @IsNotEmpty()
-    ltg:number;
+    lng: number;
 }

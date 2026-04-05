@@ -1,16 +1,25 @@
-import { Priority } from "@prisma/client"
-import { IsEnum, IsNotEmpty, IsOptional, IsString } from "class-validator";
+import { Priority } from '@prisma/client';
+import { IsArray, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class CreateBrigadeDto {
-    @IsNotEmpty()
-    @IsString()
-    name:string;
+  @IsNotEmpty()
+  @IsString()
+  name: string;
 
-    @IsOptional()
-    @IsEnum(Priority)
-    priority?:Priority;
+  @IsOptional()
+  @IsEnum(Priority)
+  priority?: Priority;
 
-    @IsOptional()
-    @IsString()
-    needs?:string;
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  needs?: string[];
+
+  @IsNotEmpty()
+  @IsNumber()
+  lat: number;
+
+  @IsNotEmpty()
+  @IsNumber()
+  lng: number;
 }

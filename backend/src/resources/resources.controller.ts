@@ -3,6 +3,10 @@ import { ResourcesService } from './resources.service';
 import { CreateResourceDto } from './dto/create-resource.dto';
 import { UpdateResourceDto } from './dto/update-resource.dto';
 
+import { UseGuards } from '@nestjs/common';
+import { JwtAuthGuard } from 'src/auth/jwtGuard';
+
+@UseGuards(JwtAuthGuard)
 @Controller('resources')
 export class ResourcesController {
   constructor(private readonly resourcesService: ResourcesService) {}
@@ -19,16 +23,16 @@ export class ResourcesController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.resourcesService.findOne(+id);
+    return this.resourcesService.findOne(id);
   }
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateResourceDto: UpdateResourceDto) {
-    return this.resourcesService.update(+id, updateResourceDto);
+    return this.resourcesService.update(id, updateResourceDto);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.resourcesService.remove(+id);
+    return this.resourcesService.remove(id);
   }
 }
