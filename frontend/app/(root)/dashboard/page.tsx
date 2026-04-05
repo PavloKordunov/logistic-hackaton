@@ -214,34 +214,46 @@ export default function App() {
   const [brigades, setBrigades] = useState<Brigade[]>([]);
   const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
   const [trucks, setTrucks] = useState<Truck[]>([]);
+  const [routes, setRoutes] = useState<RouteInfo[]>([]);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const token = localStorage.getItem("token");
 
-        const [brigadesRes, warehousesRes, trucksRes] = await Promise.all([
-          fetch(`${BASE_URL}/brigades`, {
-            method: "GET",
-            headers: { Authorization: `Bearer ${token}` },
-          }),
-          fetch(`${BASE_URL}/warehouses`, {
-            method: "GET",
-            headers: { Authorization: `Bearer ${token}` },
-          }),
-          fetch(`${BASE_URL}/vehicles`, {
-            method: "GET",
-            headers: { Authorization: `Bearer ${token}` },
-          }),
-        ]);
+        const [brigadesRes, warehousesRes, trucksRes, routesRes] =
+          await Promise.all([
+            fetch(`${BASE_URL}/brigades`, {
+              method: "GET",
+              headers: { Authorization: `Bearer ${token}` },
+            }),
+            fetch(`${BASE_URL}/warehouses`, {
+              method: "GET",
+              headers: { Authorization: `Bearer ${token}` },
+            }),
+            fetch(`${BASE_URL}/vehicles`, {
+              method: "GET",
+              headers: { Authorization: `Bearer ${token}` },
+            }),
+            fetch(`${BASE_URL}/routes`, {
+              method: "GET",
+              headers: { Authorization: `Bearer ${token}` },
+            }),
+          ]);
 
-        if (!brigadesRes.ok || !warehousesRes.ok || !trucksRes.ok) {
+        if (
+          !brigadesRes.ok ||
+          !warehousesRes.ok ||
+          !trucksRes.ok ||
+          !routesRes.ok
+        ) {
           throw new Error("Помилка завантаження даних з сервера");
         }
 
         const brigadesData = await brigadesRes.json();
         const warehousesData = await warehousesRes.json();
         const trucksData = await trucksRes.json();
+        const routesData = await routesRes.json();
 
         const formattedBrigades = brigadesData.map((b: any, idx: number) => {
           let formattedNeeds = "Невідомі потреби";
@@ -284,6 +296,7 @@ export default function App() {
         setBrigades(formattedBrigades);
         setWarehouses(formattedWarehouses);
         setTrucks(formattedTrucks);
+        setRoutes(routesData);
       } catch (error) {
         console.error("Помилка при завантаженні даних:", error);
       }
@@ -491,7 +504,7 @@ export default function App() {
             </div>
           </div>
         </div> */}
-        <div className="lg:col-span-7 military-panel notched-corner relative overflow-hidden h-[380px] sm:h-[460px] lg:h-[550px] bg-black">
+        <div className="lg:col-span-7 military-panel notched-corner relative overflow-hidden h-[550px] bg-black">
           <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-[#FF9900] -translate-x-[1px] -translate-y-[1px] z-10"></div>
           <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-[#FF9900] translate-x-[1px] translate-y-[1px] z-10"></div>
 
@@ -499,13 +512,13 @@ export default function App() {
             warehouses={warehouses}
             brigades={brigades}
             trucks={trucks}
-            routes={mockRoutes}
+            routes={routes}
           />
         </div>
 
         <div
           id="map"
-          className="lg:col-span-3 flex flex-col gap-4 sm:gap-6 overflow-hidden"
+          className="lg:col-span-3 flex flex-col gap-6 overflow-hidden"
         >
           <div className="flex items-center justify-between px-2">
             <h3 className="font-black text-xs uppercase tracking-[0.2em] text-white">
