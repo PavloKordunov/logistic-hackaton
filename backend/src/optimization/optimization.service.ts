@@ -1,75 +1,106 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { HttpService } from '@nestjs/axios';
+import { Injectable, ServiceUnavailableException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { iterator } from 'rxjs/internal/symbol/iterator';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { Delivery, Priority } from '@prisma/client';
+import { firstValueFrom } from 'rxjs';
 import { PrismaService } from 'src/prisma/prisma.service';
+
+export type DeliveryForOptimization = Delivery & {
+  Brigade: { lat: number; lng: number };
+};
+
+interface OptimizePayload {
+  start_point: { lat: number; lng: number };
+  points: { id: string; lat: number; lng: number; priority: Priority }[];
+}
+
+interface OptimizeResponseBody {
+  optimizedOrder: string[];
+}
 
 @Injectable()
 export class OptimizationService {
-    constructor(private readonly prisma:PrismaService,
-        private readonly configService:ConfigService
-    ){}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly httpService: HttpService,
+    private readonly configService: ConfigService,
+    private readonly eventEmitter: EventEmitter2,
+  ) {}
 
-    async trsggerReRoute(){
-        const pendingDeliveries=await this.prisma.delivery.findMany({
-            where:{status:'PENDING'},
-            include:{brigade:true}
-        })
-        if(pendingDeliveries.length===0){
-            return {message:'Немає замовлень для оптимізації'}
-        }
-        const availableVehicles=await this.prisma.vehicle.findMany({
-            where:{status:'IDLE'}
-        })
+  async calculateAndApplyOrder(
+    routeId: string,
+    startLat: number,
+    startLng: number,
+    deliveries: DeliveryForOptimization[],
+  ): Promise<void> {
+    const pending = deliveries.filter((d) => d.status === 'PENDING');
 
-        if(availableVehicles.length===0){
-            return {message:'немає вільних машин'}
-        }
-
-        const payload={
-            vehicles:availableVehicles.map(v=>({
-               id:v.id,
-               lat:v.lat,
-               ltg:v.lng
-            })),
-            tasks:pendingDeliveries.map(p=>({
-                deliveryId:p.id,
-                lat:p.brigade.lat,
-                ltg:p.brigade.lng,
-                priority:p.priority,
-            }))
-        }
-
-        try {
-            const pythonApiURL=this.configService.get<string>('PYTHON_MICROSERVICE_URL') || 'http://localhost:8000/optimize'
-
-            const res=await fetch(pythonApiURL,{
-                method:"POST",
-                headers:{'Content-Type':'application/json'},
-                body:JSON.stringify(payload)
-            })
-            if(!res.ok){
-                throw new Error(`Помилка від python ${res.statusText}`)
-            }
-            const data=await res.json()
-
-            const updatePromise=data.map((item:any)=>{
-                return this.prisma.delivery.update({
-                    where:{id:item.deliveryId},
-                    data:{
-                        stepOrder:item.stepOrder
-                    },
-                });
-            });
-            await this.prisma.$transaction(updatePromise)
-            
-            return {
-                succes:true,
-                message:'Маршрути успішно перераховані',
-                optimizedCount:data.length
-            }
-        } catch (error) {
-            console.error('помилка fetch запиту ',error)
-            throw new InternalServerErrorException('Мікросервіс не доступний')
-        }
+    if (pending.length === 0) {
+      this.eventEmitter.emit('route.updated', { routeId });
+      return;
     }
+
+    const payload: OptimizePayload = {
+      start_point: { lat: startLat, lng: startLng },
+      points: pending.map((d) => ({
+        id: d.id,
+        lat: d.Brigade.lat,
+        lng: d.Brigade.lng,
+        priority: d.priority,
+      })),
+    };
+
+    const url =
+      this.configService.get<string>('PYTHON_MICROSERVICE_URL') ??
+      'http://localhost:8000/optimize';
+
+    let optimizedOrder: string[];
+    try {
+      const { data } = await firstValueFrom(
+        this.httpService.post<OptimizeResponseBody>(url, payload, {
+          headers: { 'Content-Type': 'application/json' },
+          timeout: 60_000,
+        }),
+      );
+      if (!data?.optimizedOrder || !Array.isArray(data.optimizedOrder)) {
+        throw new Error('Invalid response: missing optimizedOrder');
+      }
+      optimizedOrder = data.optimizedOrder;
+    } catch (err: unknown) {
+      const msg =
+        err && typeof err === 'object' && 'message' in err
+          ? String((err as { message: unknown }).message)
+          : String(err);
+      throw new ServiceUnavailableException(
+        `Optimization service unavailable: ${msg}`,
+      );
+    }
+
+    const idSet = new Set(pending.map((d) => d.id));
+    if (optimizedOrder.length !== pending.length) {
+      throw new ServiceUnavailableException(
+        'Optimization result size does not match pending deliveries',
+      );
+    }
+    for (const id of optimizedOrder) {
+      if (!idSet.has(id)) {
+        throw new ServiceUnavailableException(
+          'Optimization returned an unknown delivery id',
+        );
+      }
+    }
+
+    const now = new Date();
+    await this.prisma.$transaction(
+      optimizedOrder.map((deliveryId, index) =>
+        this.prisma.delivery.update({
+          where: { id: deliveryId },
+          data: { stepOrder: index + 1, updatedAt: now },
+        }),
+      ),
+    );
+
+    this.eventEmitter.emit('route.updated', { routeId });
+  }
 }
