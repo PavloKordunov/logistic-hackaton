@@ -225,12 +225,12 @@ const BrigadesPage = () => {
                 Критичні Потреби
               </h4>
               <div className="flex flex-wrap gap-2">
-                {b.needs.map(({ need, i }: any) => (
+                {b.needs.map((item: string, itemIdx: number) => (
                   <span
-                    key={i}
+                    key={`${b.id}-${itemIdx}`}
                     className="text-[9px] font-black bg-military-gray px-2 py-1 notched-corner text-white uppercase tracking-widest border border-white/5"
                   >
-                    {need}
+                    {item}
                   </span>
                 ))}
               </div>
