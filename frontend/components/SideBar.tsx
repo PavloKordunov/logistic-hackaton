@@ -72,6 +72,7 @@ const SideBar = ({
     router.push("/");
     onClose?.();
   };
+
   return (
     <>
       <div
@@ -80,46 +81,48 @@ const SideBar = ({
         }`}
         onClick={onClose}
       />
+      {/* Додано h-full та shrink-0 для надійності розмірів */}
       <aside
-        className={`fixed inset-y-0 left-0 z-40 w-[260px] bg-military-black border-r border-white/10 flex flex-col transition-transform duration-300 md:static md:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-40 w-[260px] bg-military-black border-r border-white/10 flex flex-col h-full shrink-0 transition-transform duration-300 md:static md:translate-x-0 ${
           isOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-      <div className="flex items-center justify-end px-4 pt-4 md:hidden">
-        <button
-          onClick={onClose}
-          className="p-2 text-slate-400 hover:text-white"
-          aria-label="Close navigation"
-        >
-          <X size={18} />
-        </button>
-      </div>
-      <div className="p-8 flex flex-col gap-4">
-        <div className="flex flex-col gap-0">
-          <div className="flex items-center gap-2">
-            <div className="w-10 h-10 bg-military-orange flex items-center justify-center notched-corner">
-              <Truck size={22} className="text-black" />
-            </div>
-            <div className="flex flex-col leading-none">
-              <h1 className="text-2xl font-black tracking-tighter text-white uppercase italic">
-                ResiLog
-              </h1>
-              <span className="text-military-orange font-black text-xs uppercase tracking-widest">
-                Front UA
-              </span>
+        <div className="flex items-center justify-end px-4 pt-4 md:hidden">
+          <button
+            onClick={onClose}
+            className="p-2 text-slate-400 hover:text-white"
+            aria-label="Close navigation"
+          >
+            <X size={18} />
+          </button>
+        </div>
+        <div className="p-8 flex flex-col gap-4">
+          <div className="flex flex-col gap-0">
+            <div className="flex items-center gap-2">
+              <div className="w-10 h-10 bg-military-orange flex items-center justify-center notched-corner">
+                <Truck size={22} className="text-black" />
+              </div>
+              <div className="flex flex-col leading-none">
+                <h1 className="text-2xl font-black tracking-tighter text-white uppercase italic">
+                  ResiLog
+                </h1>
+                <span className="text-military-orange font-black text-xs uppercase tracking-widest">
+                  Front UA
+                </span>
+              </div>
             </div>
           </div>
+          <div className="flex items-center gap-2 mt-2">
+            <div className="w-5 h-3 bg-[#0057b7] rounded-sm" />
+            <div className="w-5 h-3 bg-[#ffd700] rounded-sm" />
+            <span className="text-[9px] text-slate-500 font-black uppercase tracking-[0.2em]">
+              Логістика Перемоги
+            </span>
+          </div>
         </div>
-        <div className="flex items-center gap-2 mt-2">
-          <div className="w-5 h-3 bg-[#0057b7] rounded-sm" />
-          <div className="w-5 h-3 bg-[#ffd700] rounded-sm" />
-          <span className="text-[9px] text-slate-500 font-black uppercase tracking-[0.2em]">
-            Логістика Перемоги
-          </span>
-        </div>
-      </div>
 
-      <nav className="flex-1 mt-4">
+        {/* Додано overflow-y-auto сюди, щоб меню можна було гортати, не зсуваючи кнопку виходу */}
+        <nav className="flex-1 mt-4 overflow-y-auto custom-scrollbar">
           <SidebarItem
             icon={LayoutDashboard}
             label="Головна"
@@ -148,42 +151,42 @@ const SideBar = ({
             active={pathname === "/brigade"}
             onClick={onClose}
           />
-      </nav>
+        </nav>
 
-      <div className="p-6 border-t border-white/5">
-        <div className="flex items-center gap-4 p-4 bg-military-gray notched-corner border border-white/5">
-          <div className="w-12 h-12 bg-military-orange flex items-center justify-center notched-corner">
-            <img
-              src="./logo-team.png"
-              alt="Avatar"
-              className="w-full h-full object-cover grayscale contrast-125"
-              referrerPolicy="no-referrer"
-            />
-          </div>
-          <div className="flex flex-col">
-            <span className="text-xs font-black text-white uppercase tracking-wider">
-              Логіст Оператор
-            </span>
-            <div className="flex items-center gap-1.5 mt-1">
-              <div className="w-2 h-2 bg-military-orange animate-pulse" />
-              <span className="text-[9px] text-military-orange font-mono font-bold uppercase">
-                ALGO_ONLINE
+        {/* Блок з аватаром і кнопкою виходу надійно зафіксований знизу */}
+        <div className="p-6 border-t border-white/5 mt-auto">
+          <div className="flex items-center gap-4 p-4 bg-military-gray notched-corner border border-white/5">
+            <div className="w-12 h-12 bg-military-orange flex items-center justify-center notched-corner">
+              <img
+                src="./logo-team.png"
+                alt="Avatar"
+                className="w-full h-full object-cover grayscale contrast-125"
+                referrerPolicy="no-referrer"
+              />
+            </div>
+            <div className="flex flex-col">
+              <span className="text-xs font-black text-white uppercase tracking-wider">
+                Логіст Оператор
               </span>
+              <div className="flex items-center gap-1.5 mt-1">
+                <div className="w-2 h-2 bg-military-orange animate-pulse" />
+                <span className="text-[9px] text-military-orange font-mono font-bold uppercase">
+                  ALGO_ONLINE
+                </span>
+              </div>
             </div>
           </div>
+          <button
+            onClick={logOut}
+            className="cursor-pointer w-full mt-6 flex items-center justify-center gap-2 py-3 text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-white hover:bg-red-500/10 transition-all border border-transparent hover:border-red-500/20 notched-button"
+          >
+            <LogOut size={14} />
+            <span>Завершити сесію</span>
+          </button>
         </div>
-        <button
-          onClick={logOut}
-          className="cursor-pointer w-full mt-6 flex items-center justify-center gap-2 py-3 text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-white hover:bg-red-500/10 transition-all border border-transparent hover:border-red-500/20 notched-button"
-        >
-          <LogOut size={14} />
-          <span>Завершити сесію</span>
-        </button>
-      </div>
-    </aside>
+      </aside>
     </>
   );
 };
 
 export default SideBar;
-    

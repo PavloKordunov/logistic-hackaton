@@ -4,63 +4,6 @@ import { MapPin, RefreshCw, TrendingUp, X } from "lucide-react";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 
-// const activeOrders = [
-//   {
-//     id: "#4782",
-//     unit: "2-га Механізована",
-//     type: "Турнікети",
-//     amount: "120 шт.",
-//     time: "11 хв тому",
-//     priority: "RED",
-//     status: "В дорозі",
-//   },
-//   {
-//     id: "#4781",
-//     unit: "1-ша Танкова",
-//     type: "Пальне",
-//     amount: "800 л",
-//     time: "34 хв тому",
-//     priority: "YELLOW",
-//     status: "Завантажено",
-//   },
-//   {
-//     id: "#4780",
-//     unit: "93-тя Холодний Яр",
-//     type: "БК 155мм",
-//     amount: "40 од",
-//     time: "1 год тому",
-//     priority: "GREEN",
-//     status: "В дорозі",
-//   },
-//   {
-//     id: "#4779",
-//     unit: "47-ма Маґура",
-//     type: "Запчастини",
-//     amount: "12 од",
-//     time: "2 год тому",
-//     priority: "YELLOW",
-//     status: "Завантажено",
-//   },
-//   {
-//     id: "#4778",
-//     unit: "3-тя Штурмова",
-//     type: "Медикаменти",
-//     amount: "5 ящиків",
-//     time: "3 год тому",
-//     priority: "RED",
-//     status: "В дорозі",
-//   },
-//   {
-//     id: "#4777",
-//     unit: "80-та ДШВ",
-//     type: "Рації",
-//     amount: "15 шт.",
-//     time: "5 год тому",
-//     priority: "GREEN",
-//     status: "Завантажено",
-//   },
-// ];
-
 const OrdersPage = () => {
   const [ordersData, setOrdersData] = useState<any[]>([]);
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
@@ -136,104 +79,104 @@ const OrdersPage = () => {
 
         <div className="military-panel notched-corner overflow-hidden">
           <div className="overflow-x-auto">
-          <table className="w-full min-w-[860px] text-left border-collapse">
-            <thead>
-              <tr className="bg-military-gray border-b border-white/10">
-                <th className="px-6 py-4 text-[9px] font-black uppercase tracking-[0.2em] text-slate-500">
-                  ID
-                </th>
-                <th className="px-6 py-4 text-[9px] font-black uppercase tracking-[0.2em] text-slate-500">
-                  Бригада
-                </th>
-                <th className="px-6 py-4 text-[9px] font-black uppercase tracking-[0.2em] text-slate-500">
-                  Тип вантажу
-                </th>
-                <th className="px-6 py-4 text-[9px] font-black uppercase tracking-[0.2em] text-slate-500">
-                  Кількість
-                </th>
-                <th className="px-6 py-4 text-[9px] font-black uppercase tracking-[0.2em] text-slate-500">
-                  Час
-                </th>
-                <th className="px-6 py-4 text-[9px] font-black uppercase tracking-[0.2em] text-slate-500">
-                  Статус
-                </th>
-                <th className="px-6 py-4 text-[9px] font-black uppercase tracking-[0.2em] text-slate-500">
-                  Дії
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-white/5">
-              {ordersData.map((order) => (
-                <tr
-                  key={order.id}
-                  className={`
+            <table className="w-full min-w-[860px] text-left border-collapse">
+              <thead>
+                <tr className="bg-military-gray border-b border-white/10">
+                  <th className="px-6 py-4 text-[9px] font-black uppercase tracking-[0.2em] text-slate-500">
+                    ID
+                  </th>
+                  <th className="px-6 py-4 text-[9px] font-black uppercase tracking-[0.2em] text-slate-500">
+                    Бригада
+                  </th>
+                  <th className="px-6 py-4 text-[9px] font-black uppercase tracking-[0.2em] text-slate-500">
+                    Тип вантажу
+                  </th>
+                  <th className="px-6 py-4 text-[9px] font-black uppercase tracking-[0.2em] text-slate-500">
+                    Кількість
+                  </th>
+                  <th className="px-6 py-4 text-[9px] font-black uppercase tracking-[0.2em] text-slate-500">
+                    Час
+                  </th>
+                  <th className="px-6 py-4 text-[9px] font-black uppercase tracking-[0.2em] text-slate-500">
+                    Статус
+                  </th>
+                  <th className="px-6 py-4 text-[9px] font-black uppercase tracking-[0.2em] text-slate-500">
+                    Дії
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-white/5">
+                {ordersData.map((order) => (
+                  <tr
+                    key={order.id}
+                    className={`
                               hover:bg-white/5 transition-all cursor-pointer group relative
                               ${selectedOrderId === order.id && "bg-white/5"}
                             `}
-                  onClick={() => setSelectedOrderId(order.id)}
-                >
-                  <td className="px-6 py-4">
-                    <div
-                      className="absolute left-0 top-0 bottom-0 w-1"
-                      style={{
-                        backgroundColor:
-                          order.priority === "RED"
-                            ? "#ef4444"
-                            : order.priority === "YELLOW"
-                              ? "#f59e0b"
-                              : "#ff9d00",
-                      }}
-                    />
-                    <span className="text-[10px] font-mono font-black text-slate-400">
-                      {order.id.slice(-4)}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-3">
-                      <span
-                        className={`
+                    onClick={() => setSelectedOrderId(order.id)}
+                  >
+                    <td className="px-6 py-4">
+                      <div
+                        className="absolute left-0 top-0 bottom-0 w-1"
+                        style={{
+                          backgroundColor:
+                            order.priority === "RED"
+                              ? "#ef4444"
+                              : order.priority === "YELLOW"
+                                ? "#f59e0b"
+                                : "#ff9d00",
+                        }}
+                      />
+                      <span className="text-[10px] font-mono font-black text-slate-400">
+                        {order.id.slice(-4)}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <span
+                          className={`
                                   w-2 h-2 notched-corner
                                   ${order.priority === "RED" ? "bg-red-500" : order.priority === "YELLOW" ? "bg-amber-500" : "bg-military-orange"}
                                 `}
-                      />
-                      <span className="text-xs font-black uppercase tracking-tight">
-                        {order.Brigade.name}
-                      </span>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 text-xs font-bold text-slate-300">
-                    {order.Resource.name}
-                  </td>
-                  <td className="px-6 py-4 text-xs font-mono font-black text-military-orange">
-                    {order.Resource.quantity}
-                  </td>
-                  <td className="px-6 py-4 text-[10px] font-black uppercase text-slate-500">
-                    {getRelativeTime(order.updatedAt)}
-                  </td>
-                  <td className="px-6 py-4">
-                    <span
-                      className={`
+                        />
+                        <span className="text-xs font-black uppercase tracking-tight">
+                          {order.Brigade.name}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 text-xs font-bold text-slate-300">
+                      {order.Resource.name}
+                    </td>
+                    <td className="px-6 py-4 text-xs font-mono font-black text-military-orange">
+                      {order.Resource.quantity}
+                    </td>
+                    <td className="px-6 py-4 text-[10px] font-black uppercase text-slate-500">
+                      {getRelativeTime(order.updatedAt)}
+                    </td>
+                    <td className="px-6 py-4">
+                      <span
+                        className={`
                                 text-[9px] font-black uppercase tracking-widest px-2 py-1 notched-corner
                                 ${order.status === "В дорозі" ? "bg-emerald-500/10 text-emerald-500" : "bg-amber-500/10 text-amber-500"}
                               `}
-                    >
-                      {order.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-2">
-                      <button className="p-2 bg-military-gray hover:bg-military-orange hover:text-black transition-all notched-corner border border-white/5">
-                        <MapPin size={14} />
-                      </button>
-                      <button className="p-2 bg-military-gray hover:bg-red-600 hover:text-white transition-all notched-corner border border-white/5">
-                        <RefreshCw size={14} />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                      >
+                        {order.status}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-2">
+                        <button className="p-2 bg-military-gray hover:bg-military-orange hover:text-black transition-all notched-corner border border-white/5">
+                          <MapPin size={14} />
+                        </button>
+                        <button className="p-2 bg-military-gray hover:bg-red-600 hover:text-white transition-all notched-corner border border-white/5">
+                          <RefreshCw size={14} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
 
@@ -357,7 +300,9 @@ const OrdersPage = () => {
               Час Створення
             </span>
             <span className="text-xs font-black text-white uppercase">
-              {selectedOrder?.updatedAt ? getRelativeTime(selectedOrder.updatedAt) : "-"}
+              {selectedOrder?.updatedAt
+                ? getRelativeTime(selectedOrder.updatedAt)
+                : "-"}
             </span>
           </div>
         </div>
